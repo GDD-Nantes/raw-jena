@@ -1,7 +1,7 @@
 package fr.gdd.sage.writers;
 
 import fr.gdd.sage.arq.SageConstants;
-import fr.gdd.sage.fuseki.SageModule;
+import fr.gdd.sage.fuseki.RAWModule;
 import fr.gdd.sage.io.SageOutput;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.jena.atlas.io.IndentedWriter;
@@ -22,7 +22,7 @@ public class OutputWriterJSONSage implements ModuleOutputWriter {
             return;
         }
         writer.print(" ,");
-        writer.print(JSWriter.outputQuotedString(SageModule.class.getSimpleName()));
+        writer.print(JSWriter.outputQuotedString(RAWModule.class.getSimpleName()));
         writer.println(" : ");
 
         byte[] serialized = SerializationUtils.serialize(output);

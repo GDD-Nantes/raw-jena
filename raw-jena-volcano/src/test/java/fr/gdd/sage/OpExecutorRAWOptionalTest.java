@@ -4,7 +4,6 @@ import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.ext.com.google.common.collect.HashMultiset;
 import org.apache.jena.ext.com.google.common.collect.Multiset;
-import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.Plan;
@@ -24,19 +23,18 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-class OpExecutorRandomNLJTest {
+class OpExecutorRAWOptionalTest {
 
-    private static Logger log = LoggerFactory.getLogger(OpExecutorRandomNLJTest.class);
+    private static Logger log = LoggerFactory.getLogger(OpExecutorRAWOptionalTest.class);
 
     static Dataset dataset;
 
     @BeforeAll
     public static void initializeDB() {
         dataset = new InMemoryInstanceOfTDB2ForRandom().getDataset();
-        QueryEngineRandom.register();
+        QueryEngineRAW.register();
     }
 
     @AfterAll
@@ -46,12 +44,11 @@ class OpExecutorRandomNLJTest {
     }
 
     @Test
-    public void get_a_random_from_join() {
-        Op op = SSE.parseOp("(join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
-        Set<Binding> allBindings = OpExecutorRandomBGPTest.generateResults(op, dataset);
+    public void get_a_random_from_an_option() {
+        Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        // set ARQ.optimization to false in order to disable the merge of BGPs
-        Context c = dataset.getContext().copy().set(SageConstants.limit, 1).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(SageConstants.limit, 1);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -63,18 +60,19 @@ class OpExecutorRandomNLJTest {
             assertTrue(allBindings.contains(result));
             sum += 1;
         }
-        log.debug("Random result found: {}", result);
+
+        log.debug("Random result from optional: {}", result);
         assertEquals(1, sum);
     }
 
+
     @Test
-    public void get_1000_randoms_from_a_join_of_bgp() {
-        Op op = SSE.parseOp("(join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
-        Set<Binding> allBindings = OpExecutorRandomBGPTest.generateResults(op, dataset);
+    public void get_1000_randoms_from_an_option() {
+        Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        // set ARQ.optimization to false in order to disable the merge of BGPs
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -91,64 +89,66 @@ class OpExecutorRandomNLJTest {
             randomSetOfBindings.contains(existingBinding);
         }
 
+        // It should highlight a skew: Of course, mandatory parts without optional parts
+        // appear more often than mandatory+optional since the random is divided between
+        // the sub path that are optional.
         for (Binding binding : randomSetOfBindings.elementSet()) {
             log.debug("{} -> {}", binding, randomSetOfBindings.count(binding));
         }
     }
 
     @Test
-    public void get_a_random_from_join_without_results() {
-        Op op = SSE.parseOp("(join (bgp (?s <http://address> ?o)) (bgp (?s ?l <http://nowhere>)))");
-        Set<Binding> allBindings = OpExecutorRandomBGPTest.generateResults(op, dataset);
-
-        final long LIMIT = 1;
-        final long TIMEOUT = 100;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(SageConstants.timeout, TIMEOUT).set(ARQ.optimization, false);
-        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-
-        long startExecution = System.currentTimeMillis();
-        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
-
-        QueryIterator iterator = plan.iterator();
-        Multiset<Binding> randomSetOfBindings = HashMultiset.create();
-
-        while (iterator.hasNext()) {
-            Binding randomBinding = iterator.next();
-            assertTrue(allBindings.contains(randomBinding));
-            randomSetOfBindings.add(randomBinding);
-        }
-        long elapsedExecution = System.currentTimeMillis() - startExecution;
-
-        assertEquals(0, randomSetOfBindings.size());
-        assertTrue(elapsedExecution >= TIMEOUT);
-    }
-
-    @Test
-    public void join_of_a_join() {
-        Op op = SSE.parseOp("(join (bgp (?a <http://species> <http://canine>)) (join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a))))");
-        Set<Binding> allBindings = OpExecutorRandomBGPTest.generateResults(op, dataset);
+    public void get_1000_random_from_optional_that_succeed_and_fail_in_option() {
+        Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a) (?a <http://species> <http://canine>)))");
+        Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
         QueryIterator iterator = plan.iterator();
         Multiset<Binding> randomSetOfBindings = HashMultiset.create();
-
         while (iterator.hasNext()) {
             Binding randomBinding = iterator.next();
-            assertTrue(allBindings.contains(randomBinding));
+            // cannot assert since mandatory alone is sometime not in the results set
+            // assertTrue(allBindings.contains(randomBinding));
             randomSetOfBindings.add(randomBinding);
         }
-
         assertEquals(LIMIT, randomSetOfBindings.size());
-        assertEquals(allBindings.size(), randomSetOfBindings.elementSet().size());
+        // not equal since for some results there are (mandatory and mandatory+option)
+        assertNotEquals(allBindings.size(), randomSetOfBindings.elementSet().size());
+        for (Binding existingBinding : allBindings) {
+            randomSetOfBindings.contains(existingBinding);
+        }
 
+        // It should highlight a skew: Of course, mandatory parts without optional parts
+        // appear more often than mandatory+optional since the random is divided between
+        // the sub path that are optional.
         for (Binding binding : randomSetOfBindings.elementSet()) {
             log.debug("{} -> {}", binding, randomSetOfBindings.count(binding));
         }
+    }
+
+    @Test
+    public void mandatory_part_of_optional_is_empty() {
+        Op op = SSE.parseOp("(conditional (bgp (?s <http://nothing> ?o)) (bgp (?s <http://own> ?a)))");
+
+        final long LIMIT = 100;
+        final long TIMEOUT = 100; // 1s
+        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(SageConstants.timeout, TIMEOUT);
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+
+        QueryIterator iterator = plan.iterator();
+        Multiset<Binding> randomSetOfBindings = HashMultiset.create();
+        while (iterator.hasNext()) {
+            Binding randomBinding = iterator.next();
+            // cannot assert since mandatory alone is sometime not in the results set
+            // assertTrue(allBindings.contains(randomBinding));
+            randomSetOfBindings.add(randomBinding);
+        }
+        assertEquals(0, randomSetOfBindings.size());
     }
 
 }

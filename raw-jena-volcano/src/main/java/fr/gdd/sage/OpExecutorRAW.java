@@ -19,7 +19,7 @@ import java.util.Objects;
 /**
  * Executes a random branch of the tree that represents a query.
  */
-public class OpExecutorRandom extends OpExecutorSage {
+public class OpExecutorRAW extends OpExecutorSage {
 
     public static class OpExecutorRandomFactory implements OpExecutorFactory {
         SageServerConfiguration configuration;
@@ -30,31 +30,31 @@ public class OpExecutorRandom extends OpExecutorSage {
 
         @Override
         public OpExecutor create(ExecutionContext context) {
-            return new OpExecutorRandom(context, configuration);
+            return new OpExecutorRAW(context, configuration);
         }
     }
 
-    public OpExecutorRandom(ExecutionContext context, SageServerConfiguration configuration) {
+    public OpExecutorRAW(ExecutionContext context, SageServerConfiguration configuration) {
         super(context, configuration);
         ScanIteratorFactory scanFactory = context.getContext().get(SageConstants.scanFactory);
-        if (Objects.isNull(scanFactory) || !(scanFactory instanceof RandomScanIteratorFactory)) {
+        if (Objects.isNull(scanFactory) || !(scanFactory instanceof RAWScanIteratorFactory)) {
             // since it inherits from Sage, it may be already set to preemptScanIteratorFactory, so we reset
-            context.getContext().set(SageConstants.scanFactory, new RandomScanIteratorFactory(context));
+            context.getContext().set(SageConstants.scanFactory, new RAWScanIteratorFactory(context));
         }
     }
 
     @Override
     public QueryIterator execute(OpUnion opUnion, QueryIterator input) {
-        return new RandomQueryIterUnion(input, flattenUnion(opUnion), execCxt);
+        return new RAWQueryIterUnion(input, flattenUnion(opUnion), execCxt);
     }
 
     @Override
     protected QueryIterator execute(OpJoin opJoin, QueryIterator input) {
-        return new RandQueryIterNestedLoopJoin(opJoin, input, execCxt);
+        return new RAWQueryIterNestedLoopJoin(opJoin, input, execCxt);
     }
 
     @Override
     protected QueryIterator execute(OpConditional opCondition, QueryIterator input) {
-        return new RandomQueryIterOptionalIndex(exec(opCondition.getLeft(), input), opCondition.getRight(), execCxt);
+        return new RAWQueryIterOptionalIndex(exec(opCondition.getLeft(), input), opCondition.getRight(), execCxt);
     }
 }

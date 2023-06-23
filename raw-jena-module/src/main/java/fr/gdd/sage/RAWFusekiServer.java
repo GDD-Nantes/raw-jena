@@ -1,8 +1,7 @@
 package fr.gdd.sage;
 
-import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.persistent.Watdiv10M;
-import fr.gdd.sage.fuseki.RandomModule;
+import fr.gdd.sage.fuseki.RAWModule;
 import org.apache.jena.fuseki.auth.Auth;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.sys.FusekiModules;
@@ -19,35 +18,50 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A Fuseki server using Sage.
- *
- * Note: This is a usage example of {@link fr.gdd.sage.fuseki.SageModule} within
+ * A Fuseki server using RAW (RAndom Walks for query sampling)
+ * <br />
+ * Note: This is a usage example of {@link RAWModule} within
  * an embedded Fuseki server. It does not aim to be an actual server. For this,
  * you need to implement your own and register SageModule as module.
  **/
-public class RandomFusekiServer {
+public class RAWFusekiServer {
 
     @CommandLine.Option(names = "--database",
-            description = "The path to your TDB2 database. Note: If none is set, it downloads Watdiv10M.")
+            description = "The path to your TDB2 database (default: downloads Watdiv10M).")
     public String database;
 
     @CommandLine.Option(names = "--ui", description = "The path to your UI folder.")
     public String ui;
 
-    @CommandLine.Option(names = {"-v", "--verbosity"},
-            description = "The verbosity level (ALL, INFO, FINE).")
+    @CommandLine.Option(names = "--limit", description = "The maximum number of random walks per query (default: 1M).")
+    public Long limit;
+
+    @CommandLine.Option(names = "--timeout", description = "The maximal duration of random walks (default: 60K ms).")
+    public Long timeout;
+
+    @CommandLine.Option(names = {"-v", "--verbosity"}, description = "The verbosity level (ALL, INFO, FINE).")
     public String verbosity;
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Display this help message.")
     boolean usageHelpRequested;
 
+    /* **************************************************************************** */
+
     public static void main( String[] args ) {
-        RandomFusekiServer serverOptions = new RandomFusekiServer();
+        RAWFusekiServer serverOptions = new RAWFusekiServer();
         new CommandLine(serverOptions).parse(args);
 
         if (serverOptions.usageHelpRequested) {
-            CommandLine.usage(new RandomFusekiServer(), System.out);
+            CommandLine.usage(new RAWFusekiServer(), System.out);
             return;
+        }
+
+        if (Objects.isNull(serverOptions.timeout)) {
+            serverOptions.timeout = 60000L;
+        }
+
+        if (Objects.isNull(serverOptions.limit)) {
+            serverOptions.limit = 1000000L;
         }
 
         if (Objects.isNull(serverOptions.database)) {
@@ -70,22 +84,22 @@ public class RandomFusekiServer {
             }
         }
 
-        FusekiServer server = buildServer(serverOptions.database, serverOptions.ui);
+        Dataset dataset = TDB2Factory.connectDataset(serverOptions.database);
+        dataset.getContext().setIfUndef(RAWConstants.limit, serverOptions.limit);
+        dataset.getContext().setIfUndef(RAWConstants.timeout, serverOptions.timeout);
+
+        FusekiServer server = buildServer(serverOptions.database, dataset, serverOptions.ui);
         server.start();
     }
 
     /**
      * Build a random walk fuseki server.
-     * @param database The path to the TDB2 database.
+     * @param datasetPath The path to the TDB2 database.
      * @param ui The path to the ui.
      * @return A fuseki server not yet running.
      */
-    static FusekiServer buildServer(String database, String ui) {
-        Dataset dataset = TDB2Factory.connectDataset(database);
-        dataset.getContext().set(SageConstants.limit, 100);
-        dataset.getContext().set(SageConstants.timeout, 5000);
-
-        FusekiModules.add(new RandomModule());
+    static FusekiServer buildServer(String datasetPath, Dataset dataset, String ui) {
+        FusekiModules.add(new RAWModule());
 
         FusekiServer.Builder serverBuilder = FusekiServer.create()
                 // .parseConfigFile("configurations/sage.ttl")
@@ -100,10 +114,10 @@ public class RandomFusekiServer {
                 .serverAuthPolicy(Auth.ANY_ANON)
                 .addProcessor("/$/server", new ActionServerStatus())
                 //.addProcessor("/$/datasets/*", new ActionDatasets())
-                .add(Path.of(database).getFileName().toString(), dataset)
+                .add(Path.of(datasetPath).getFileName().toString(), dataset)
                 // .auth(AuthScheme.BASIC)
-                .addEndpoint(Path.of(database).getFileName().toString(),
-                        Path.of(database).getFileName().toString(),
+                .addEndpoint(Path.of(datasetPath).getFileName().toString(),
+                        Path.of(datasetPath).getFileName().toString(),
                         Operation.Query, Auth.ANY_ANON);
 
         if (Objects.nonNull(ui)) { // add UI if need be

@@ -11,7 +11,7 @@ import org.apache.jena.tdb2.store.NodeId;
 import java.util.*;
 
 /**
- * This {@link RandomJenaIterator} enables random exploration of patterns.
+ * This {@link RAWJenaIterator} enables random exploration of patterns.
  * This heavily depends on the {@link BPlusTree}
  * data structure, since it relies on {@link AccessPath} to
  * find out the boundary of the scan and draw a random element from
@@ -19,7 +19,7 @@ import java.util.*;
  *
  * This is inspired from {@link BPTreeRangeIterator}.
  **/
-public class RandomJenaIterator implements Iterator<Tuple<NodeId>>, RandomIterator {
+public class RAWJenaIterator implements Iterator<Tuple<NodeId>>, RandomIterator {
 
     private static final int NB_WALKS = 2;
 
@@ -32,7 +32,7 @@ public class RandomJenaIterator implements Iterator<Tuple<NodeId>>, RandomIterat
 
     private boolean first = true;
 
-    public RandomJenaIterator(PreemptTupleIndexRecord ptir, Record minRec, Record maxRec) {
+    public RAWJenaIterator(PreemptTupleIndexRecord ptir, Record minRec, Record maxRec) {
         this.root = ptir.bpt.getNodeManager().getRead(ptir.bpt.getRootId());
         this.tupleMap = ptir.tupleMap;
         this.minRecord = Objects.isNull(minRec) ? root.minRecord() : minRec;

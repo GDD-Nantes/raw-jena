@@ -2,13 +2,10 @@ package org.apache.jena.sparql.engine.iterator;
 
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.SageInput;
-import fr.gdd.sage.io.SageOutput;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.Binding0;
-import org.apache.jena.sparql.engine.binding.BindingRoot;
 import org.apache.jena.sparql.engine.main.QC;
 
 import java.util.Objects;
@@ -18,7 +15,7 @@ import java.util.Objects;
  * An iterator placed near the root that always produce new results until stopping a stopping
  * condition is met. For instance, it reached the maximum number of random walks.
  **/
-public class RandomCounterIter extends QueryIterRepeatApply {
+public class RAWCounterIter extends QueryIterRepeatApply {
 
     Integer nbResults = 0;
     Integer nbScans = 0; // (TODO) put a limit on that too, number of scans maximal reached
@@ -28,7 +25,7 @@ public class RandomCounterIter extends QueryIterRepeatApply {
     Binding initialBinding;
     QueryIterator current;
 
-    public RandomCounterIter(Op op, Binding initialBinding, ExecutionContext context) {
+    public RAWCounterIter(Op op, Binding initialBinding, ExecutionContext context) {
         super(QueryIterRoot.create(context), context); // `QueryIterRoot.create` to avoid complaints of super.
         input = context.getContext().get(SageConstants.input);
         this.initialBinding = initialBinding;

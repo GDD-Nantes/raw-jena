@@ -32,9 +32,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class RandomJenaIteratorCardinalityTest {
+class RAWJenaIteratorCardinalityTest {
 
-    Logger log = LoggerFactory.getLogger(RandomJenaIteratorCardinalityTest.class);
+    Logger log = LoggerFactory.getLogger(RAWJenaIteratorCardinalityTest.class);
 
     static Dataset dataset;
 
@@ -44,7 +44,7 @@ class RandomJenaIteratorCardinalityTest {
     public static void initializeDB() throws NoSuchFieldException, IllegalAccessException {
         dataset = new InMemoryInstanceOfTDB2ForRandom().getDataset();
         smallerDataset = new SmallBlocksInMemoryTDB2ForCardinality().getDataset();
-        QueryEngineRandom.register();
+        QueryEngineRAW.register();
     }
 
     @AfterAll
@@ -58,7 +58,7 @@ class RandomJenaIteratorCardinalityTest {
     public void cardinality_of_nothing() {
         // (TODO)
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (?s ?p <http://licorne>))");
-        RandomJenaIterator it = getRandomJenaIterator(op, dataset);
+        RAWJenaIterator it = getRandomJenaIterator(op, dataset);
 
         assertEquals(0, it.cardinality());
     }
@@ -66,7 +66,7 @@ class RandomJenaIteratorCardinalityTest {
     @Test
     public void cardinality_of_a_one_tuple_triple_pattern() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (?s ?p <http://cat>))");
-        RandomJenaIterator it = getRandomJenaIterator(op, dataset);
+        RAWJenaIterator it = getRandomJenaIterator(op, dataset);
 
         assertEquals(1, it.cardinality());
     }
@@ -74,7 +74,7 @@ class RandomJenaIteratorCardinalityTest {
     @Test
     public void cardinality_of_a_few_tuples_triple_pattern() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> ?p ?o))");
-        RandomJenaIterator it = getRandomJenaIterator(op, dataset);
+        RAWJenaIterator it = getRandomJenaIterator(op, dataset);
         assertEquals(4, it.cardinality());
     }
 
@@ -82,7 +82,7 @@ class RandomJenaIteratorCardinalityTest {
     @Test
     public void cardinality_of_larger_triple_pattern_above_leaf_size() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> ?p ?o))");
-        RandomJenaIterator it = getRandomJenaIterator(op, smallerDataset);
+        RAWJenaIterator it = getRandomJenaIterator(op, smallerDataset);
         assertEquals(50, it.cardinality());
     }
 
@@ -100,20 +100,20 @@ class RandomJenaIteratorCardinalityTest {
         // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://schema.org/eligibleQuantity> ?v4))"); // expect 90000 get 79454
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://purl.org/goodrelations/price> ?v2))"); // expect 240000 get 234057
 
-        RandomJenaIterator it = getRandomJenaIterator(op, watdiv);
+        RAWJenaIterator it = getRandomJenaIterator(op, watdiv);
         assertEquals(50, it.cardinality());
         watdiv.end();
     }
 
 
-    public static RandomJenaIterator getRandomJenaIterator(OpBGP op, Dataset dataset) {
+    public static RAWJenaIterator getRandomJenaIterator(OpBGP op, Dataset dataset) {
         DatasetGraphTDB activeGraph = TDBInternal.getDatasetGraphTDB(dataset);
 
         ExecutionContext execCxt = new ExecutionContext(
                 dataset.getContext(),
                 dataset.asDatasetGraph().getDefaultGraph(),
                 activeGraph,
-                new OpExecutorRandom.OpExecutorRandomFactory(dataset.getContext()));
+                new OpExecutorRAW.OpExecutorRandomFactory(dataset.getContext()));
 
         Tuple<Node>  patternTuple = TupleFactory.create3(
                 op.getPattern().get(0).getSubject(),
@@ -126,8 +126,8 @@ class RandomJenaIteratorCardinalityTest {
         NodeTupleTable nodeTupleTable = activeGraph.getTripleTable().getNodeTupleTable();
         PreemptStageMatchTuple.prepare(nodeTupleTable.getNodeTable(), patternTuple, BindingNodeId.root, ids, vars);
 
-        RandomScanIteratorFactory f = new RandomScanIteratorFactory(execCxt);
-        return (RandomJenaIterator) f.getScan(nodeTupleTable, TupleFactory.create(ids), 12);
+        RAWScanIteratorFactory f = new RAWScanIteratorFactory(execCxt);
+        return (RAWJenaIterator) f.getScan(nodeTupleTable, TupleFactory.create(ids), 12);
     }
 
 

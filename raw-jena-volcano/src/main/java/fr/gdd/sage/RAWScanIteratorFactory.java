@@ -3,7 +3,7 @@ package fr.gdd.sage;
 import org.apache.jena.sparql.engine.iterator.ScanIteratorFactory;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.dboe.trans.bplustree.PreemptTupleIndexRecord;
-import org.apache.jena.dboe.trans.bplustree.RandomJenaIterator;
+import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.iterator.PreemptScanIteratorFactory;
@@ -18,9 +18,9 @@ import java.util.Objects;
  * Returns one-time-use iterators that randomly jump in their set of possible
  * results.
  */
-public class RandomScanIteratorFactory extends PreemptScanIteratorFactory implements ScanIteratorFactory {
+public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implements ScanIteratorFactory {
 
-    public RandomScanIteratorFactory(ExecutionContext context) {
+    public RAWScanIteratorFactory(ExecutionContext context) {
         super(context);
     }
 
@@ -47,7 +47,7 @@ public class RandomScanIteratorFactory extends PreemptScanIteratorFactory implem
         if (Objects.isNull(builder.ptir)) {
             return new NullIterator<>();
         } else {
-            return new RandomJenaIterator(builder.ptir, builder.min, builder.max);
+            return new RAWJenaIterator(builder.ptir, builder.min, builder.max);
         }
     }
 }

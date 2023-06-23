@@ -2,7 +2,6 @@ package org.apache.jena.sparql.engine.iterator;
 
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.SageInput;
-import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
@@ -19,7 +18,7 @@ import java.util.Objects;
  * that this iterator may return the mandatory part without the optional part even
  * if some optional exists.
  */
-public class RandomQueryIterOptionalIndex extends QueryIter1 {
+public class RAWQueryIterOptionalIndex extends QueryIter1 {
 
     QueryIterator rightIterator;
 
@@ -27,7 +26,7 @@ public class RandomQueryIterOptionalIndex extends QueryIter1 {
     SageInput<?> input;
     Binding mandatory;
 
-    public RandomQueryIterOptionalIndex(QueryIterator input, Op rightOp, ExecutionContext execCxt) {
+    public RAWQueryIterOptionalIndex(QueryIterator input, Op rightOp, ExecutionContext execCxt) {
         super(input, execCxt);
         if (input.hasNext()) {
             mandatory = input.nextBinding();

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class QueryEngineRandomTest {
+class QueryEngineRAWTest {
 
     static Dataset dataset;
 
@@ -31,7 +31,7 @@ class QueryEngineRandomTest {
 
     @Test
     public void create_a_dataset_and_register_random_engine_then_check_if_called() {
-        QueryEngineRandom.register();
+        QueryEngineRAW.register();
 
         Op op = SSE.parseOp("(union " +
                 "(bgp (?s ?p <http://db.uwaterloo.ca/~galuc/wsdbm/Country1>)) " +
@@ -39,7 +39,7 @@ class QueryEngineRandomTest {
                 ")");
 
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
-        assertTrue(factory instanceof QueryEngineRandom.QueryEngineRandomFactory);
+        assertTrue(factory instanceof QueryEngineRAW.QueryEngineRandomFactory);
     }
 
 }

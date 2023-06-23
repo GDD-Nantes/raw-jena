@@ -34,8 +34,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class RandomFusekiServerTest {
-    private static Logger log = LoggerFactory.getLogger(RandomFusekiServerTest.class);
+class RAWFusekiServerTest {
+    private static Logger log = LoggerFactory.getLogger(RAWFusekiServerTest.class);
 
     @Disabled
     @Test
@@ -43,7 +43,7 @@ class RandomFusekiServerTest {
         long LIMIT = 2;
 
         Watdiv10M watdiv = new Watdiv10M(Optional.of("../target/"));
-        FusekiServer server = RandomFusekiServer.buildServer(watdiv.dbPath_asStr, null);
+        FusekiServer server = RAWFusekiServer.buildServer(watdiv.dbPath_asStr, null);
         server.start();
 
         String url_asString = server.serverURL() + "watdiv10M/query";

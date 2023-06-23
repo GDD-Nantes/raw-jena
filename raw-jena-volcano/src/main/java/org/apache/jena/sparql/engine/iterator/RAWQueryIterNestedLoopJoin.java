@@ -16,7 +16,7 @@ import java.util.Objects;
  * a random binding as input from its left hand side. Then tries to join
  * with a random binding from its right hand side.
  */
-public class RandQueryIterNestedLoopJoin extends QueryIter1 {
+public class RAWQueryIterNestedLoopJoin extends QueryIter1 {
 
     boolean isFirstExecution = true;
 
@@ -27,7 +27,7 @@ public class RandQueryIterNestedLoopJoin extends QueryIter1 {
 
     SageInput<?> input;
 
-    public RandQueryIterNestedLoopJoin(OpJoin opJoin, QueryIterator input, ExecutionContext context) {
+    public RAWQueryIterNestedLoopJoin(OpJoin opJoin, QueryIterator input, ExecutionContext context) {
         super(input, context);
         leftIterator = QC.execute(opJoin.getLeft(), QueryIterRoot.create(getExecContext()), context);
         left = leftIterator.hasNext() ? leftIterator.next() : null;

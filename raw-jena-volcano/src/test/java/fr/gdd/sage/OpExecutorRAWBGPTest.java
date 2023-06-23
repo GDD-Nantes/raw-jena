@@ -35,16 +35,16 @@ import java.util.concurrent.Executors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class OpExecutorRandomBGPTest {
+class OpExecutorRAWBGPTest {
 
-    private static Logger log = LoggerFactory.getLogger(OpExecutorRandomBGPTest.class);
+    private static Logger log = LoggerFactory.getLogger(OpExecutorRAWBGPTest.class);
 
     static Dataset dataset;
 
     @BeforeAll
     public static void initializeDB() {
         dataset = new InMemoryInstanceOfTDB2ForRandom().getDataset();
-        QueryEngineRandom.register();
+        QueryEngineRAW.register();
     }
 
     @AfterAll

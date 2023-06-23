@@ -1,6 +1,6 @@
 package fr.gdd.sage.fuseki;
 
-import fr.gdd.sage.arq.OpExecutorSage;
+import fr.gdd.sage.QueryEngineRAW;
 import fr.gdd.sage.arq.QueryEngineSage;
 import fr.gdd.sage.writers.ExtensibleRowSetWriterJSON;
 import fr.gdd.sage.writers.ModuleOutputRegistry;
@@ -14,42 +14,37 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.jena.riot.rowset.RowSetWriterRegistry;
-import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.tdb2.DatabaseMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 
 /**
- * Module in charge of replacing fuseki's normal behavior for `query`
- * by one that enables preemptive evaluation of queries, i.e. one that
- * enables pausing/resuming of query execution on demand, depending on
- * arguments in http headers.
- * 
- * The module simply sets the processor of `Operation.QUERY` to ours,
- * for every dataset and endpoint.
- *
+ * Module in charge of replacing Fuseki's normal behavior for `query`
+ * by one that enables users' input.
+ * <br />
+ * It needs to override the processor's normal behavior by one that will
+ * decode/encode the input/output of every http request.
+ * <br />
  * For this to work, either set full class name in a
  * `META-INF/…/…FusekiModule` file as per se in documentation, or
  * work with `addModule`.
  */
-public class SageModule implements FusekiModule {
-    Logger logger = LoggerFactory.getLogger(SageModule.class);
+public class RAWModule implements FusekiModule {
+    private static Logger logger = LoggerFactory.getLogger(RAWModule.class);
 
-    public SageModule() {}
+    public RAWModule() {}
     
     @Override
     public String name() {
-        return "Sage";
+        return "Random";
     }
     
     @Override
     public void start() {
         logger.info("start !");
-        // for now, we simply register our preemptive query engine.
-        QueryEngineSage.register();
+        QueryEngineRAW.register();
 
         // replace the output by ours to include the saved state.
         // all writers are here : <https://github.com/apache/jena/tree/main/jena-arq/src/main/java/org/apache/jena/riot/rowset/rw>
@@ -66,28 +61,13 @@ public class SageModule implements FusekiModule {
         logger.info("Patching the processor for query operations…");
 
         for (var dap : server.getDataAccessPointRegistry().accessPoints()) {
-            if (DatabaseMgr.isTDB2(dap.getDataService().getDataset())) {
-                // register the new executors for every dataset that is TDB2
-                logger.info("Creating the executor of {}…", dap.getName());
-                Dataset ds =  DatasetFactory.wrap(dap.getDataService().getDataset());
-                // ARQ context is erased by Dataset specific context
-                Context sageContext = ARQ.getContext().copy();
-                sageContext.putAll(ds.getContext());
-                QC.setFactory(ds.getContext(), new OpExecutorSage.OpExecutorSageFactory(sageContext));
-            }
-            
             // replacing the operation registry and the processor
-            server.getOperationRegistry().register(Operation.Query, new Sage_QueryDataset());
+            server.getOperationRegistry().register(Operation.Query, new RAW_QueryDataset());
             for (Endpoint ep : dap.getDataService().getEndpoints(Operation.Query)) {
                 logger.info("Patching the QUERY processor for {}", ep.getName());
                 ep.setProcessor(server.getOperationRegistry().findHandler(ep.getOperation()));
             }
         }
-    }
-    
-    @Override
-    public void serverStopped(FusekiServer server) {
-        // (TODO) maybe put back the default behavior        
     }
 
     @Override

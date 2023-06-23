@@ -2,6 +2,7 @@ package fr.gdd.sage.fuseki;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.SageInput;
 import fr.gdd.sage.io.SageOutput;
@@ -9,26 +10,22 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.jena.ext.xerces.impl.dv.util.Base64;
 import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * The processor meant to replace the actual query of dataset. Does
  * the same job but reads and writes http header to enable
  * pausing/resuming query execution.
  */
-public class Sage_QueryDataset extends SPARQL_QueryDataset {
+public class RAW_QueryDataset extends SPARQL_QueryDataset {
 
     @Override
     protected void execute(String queryString, HttpAction action) {
-
-
-        // #1 create a `SageInput` with the incoming request
-        String inputRetrievedFromRequest = getFromBodyOrHeader(SageConstants.input.getSymbol(), action);
+        // #1 read the input from incoming http action
+        String inputRetrievedFromRequest = getFromBodyOrHeader(RAWConstants.input.getSymbol(), action);
 
         // Deserialize from JSON
         SageInput<Serializable> sageInput = new SageInput<>();

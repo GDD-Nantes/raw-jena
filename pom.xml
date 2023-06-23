@@ -19,8 +19,8 @@
   </distributionManagement>
 
   <modules>
-    <module>raw-jena-module</module>
     <module>raw-jena-volcano</module>
+    <module>raw-jena-module</module>
   </modules>
 
   <properties>

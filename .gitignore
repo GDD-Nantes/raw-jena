@@ -1,3 +1,5 @@
 *~
 
-/target
+**/webapp/
+**/target/
+.idea/

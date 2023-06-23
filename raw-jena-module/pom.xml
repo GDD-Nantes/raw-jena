@@ -1,0 +1,130 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fr.gdd.sage</groupId>
+  <artifactId>raw-jena-module</artifactId>
+  <name>raw-jena-module</name>
+  <packaging>jar</packaging>
+
+  <parent>
+    <groupId>fr.gdd.sage</groupId>
+    <artifactId>raw-jena</artifactId>
+    <version>0.0.1</version>
+  </parent>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+
+    <dependency> <!-- makes use of already implem'd for compilation targeting jena -->
+      <groupId>fr.gdd.sage</groupId>
+      <artifactId>sage-jena-volcano</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>fr.gdd.sage</groupId>
+      <artifactId>sage-jena-databases</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>fr.gdd.sage</groupId>
+      <artifactId>raw-jena-volcano</artifactId>
+    </dependency>
+
+    <dependency>
+      <!-- to get ShiroEnvironmentLoader; or 
+           to get Services such as ActionServerStatus -->
+      <groupId>org.apache.jena</groupId> 
+      <artifactId>jena-fuseki-webapp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-fuseki-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-fuseki-main</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>apache-jena-libs</artifactId>
+      <type>pom</type>
+    </dependency>
+    <dependency> <!-- logger of jena -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <filtering>false</filtering>
+        <!-- contains a META-INF that automatically
+             registers SageModule in the life cycle -->
+        <directory>src/main/resources</directory>
+      </resource> 
+    </resources>
+    
+    <plugins>
+      <plugin>
+        <!-- mvn dependency:build-classpath -Dmdep.outputFile=cp.txt -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.9</version>
+        <executions>
+          <execution>
+            <id>build-classpath</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <!-- configure the plugin here -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>fr.gdd.sage.SageFusekiServer</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <mainClass>fr.gdd.sage.SageFusekiServer</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>

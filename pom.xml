@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+		             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>fr.gdd.sage</groupId>
+  <artifactId>raw-jena</artifactId>
+  <packaging>pom</packaging>
+  <version>0.0.1</version>
+  <description>RAndom Walks for Apache Jena.</description>
+
+  <distributionManagement>
+    <site>
+      <id>${project.artifactId}-site</id>
+      <url>${project.baseUri}</url>
+    </site>
+  </distributionManagement>
+
+  <modules>
+    <module>raw-jena-module</module>
+    <module>raw-jena-volcano</module>
+  </modules>
+
+  <properties>
+    <!-- For now, shared version by all submodules. Unfortunately ${revision} in
+     children
+     does not work well… For instance, `mvn exec:java -pl sage-jena-module`
+     look for sage-jena:pom:${revision} instead of sage-jena:pom:0.0.1 Thus
+     fails. Hardcoded version of parent works… -->
+    <!-- <revision>0.0.1</revision> -->
+    <sage.version>0.0.1</sage.version>
+    <junit.version>5.9.2</junit.version>
+    <jena.version>4.7.0</jena.version>
+    <slf4j.version>2.0.6</slf4j.version>
+    <args4j.version>2.33</args4j.version>
+    <common.compress.version>1.23.0</common.compress.version>
+
+    <maven.surefire.version>3.0.0</maven.surefire.version>
+    <maven.compiler.version>3.10.1</maven.compiler.version>
+    <maven.compiler.release>20</maven.compiler.release>
+    <maven.compiler.source>20</maven.compiler.source>
+    <maven.compiler.target>20</maven.compiler.target>
+    <maven.javadoc.plugin>3.5.0</maven.javadoc.plugin>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- module versions -->
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>raw-jena-volcano</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>raw-jena-module</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- sage dependencies -->
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>sage-commons</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>sage-jena-databases</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>sage-jena-tdb2</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>sage-jena-volcano</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
+
+      <!-- actual dependencies -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>apache-jena-libs</artifactId>
+        <version>${jena.version}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-fuseki-webapp</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-fuseki-core</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-fuseki-main</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+
+      <dependency> <!-- logger for jena -->
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin> <!-- so junit 5 tests are properly run on GitHub -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.version}</version>
+          <configuration>
+            <release>${maven.compiler.release}</release>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin> <!-- mvn javadoc:aggregate -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven.javadoc.plugin}</version>
+        <configuration>
+          <additionalOptions>
+            <additionalOption>-Xdoclint:none</additionalOption>
+          </additionalOptions>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <inherited>false</inherited>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>default</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>

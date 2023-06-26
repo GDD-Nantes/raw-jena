@@ -1,12 +1,10 @@
-package fr.gdd.sage;
+package org.apache.jena.sparql.engine.iterator;
 
-import org.apache.jena.sparql.engine.iterator.ScanIteratorFactory;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.dboe.trans.bplustree.PreemptTupleIndexRecord;
 import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.ExecutionContext;
-import org.apache.jena.sparql.engine.iterator.PreemptScanIteratorFactory;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.util.iterator.NullIterator;
@@ -44,10 +42,10 @@ public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implement
             PreemptTupleIndexRecord ptir = preemptQuadTupleTable.findIndex(pattern);
             builder = ptir.genericScan(pattern);
         }
-        if (Objects.isNull(builder.ptir)) {
-            return new NullIterator<>();
-        } else {
-            return new RAWJenaIterator(builder.ptir, builder.min, builder.max);
-        }
+
+        Iterator<Tuple<NodeId>> wrapped = Objects.isNull(builder.ptir) ?
+                new NullIterator<>():
+                new RAWJenaIterator(builder.ptir, builder.min, builder.max);
+        return new RAWJenaIteratorWrapper(wrapped, id, context);
     }
 }

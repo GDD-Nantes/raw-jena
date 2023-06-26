@@ -1,6 +1,8 @@
 package org.apache.jena.sparql.engine.iterator;
 
+import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.arq.SageConstants;
+import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.SageInput;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
@@ -20,14 +22,14 @@ public class RAWCounterIter extends QueryIterRepeatApply {
     Integer nbResults = 0;
     Integer nbScans = 0; // (TODO) put a limit on that too, number of scans maximal reached
 
-    SageInput<?> input;
+    RAWInput input;
     Op op;
     Binding initialBinding;
     QueryIterator current;
 
     public RAWCounterIter(Op op, Binding initialBinding, ExecutionContext context) {
         super(QueryIterRoot.create(context), context); // `QueryIterRoot.create` to avoid complaints of super.
-        input = context.getContext().get(SageConstants.input);
+        input = context.getContext().get(RAWConstants.input);
         this.initialBinding = initialBinding;
         this.op = op;
         this.nextStage(initialBinding);
@@ -49,7 +51,7 @@ public class RAWCounterIter extends QueryIterRepeatApply {
      * @return True if it should stop, false otherwise.
      */
     private boolean stoppingCondition() {
-        return nbResults >= input.getLimit() || System.currentTimeMillis() >= input.getDeadline();
+        return input.limitReached(nbResults) || input.deadlineReached();
     }
 
     @Override

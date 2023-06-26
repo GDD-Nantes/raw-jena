@@ -1,11 +1,15 @@
 package fr.gdd.sage;
 
+import fr.gdd.sage.arq.IdentifierLinker;
 import fr.gdd.sage.arq.QueryEngineSage;
 import fr.gdd.sage.arq.SageConstants;
+import fr.gdd.sage.io.RAWInput;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.OpLib;
+import org.apache.jena.sparql.algebra.op.OpSlice;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.engine.*;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -17,16 +21,14 @@ import org.apache.jena.tdb2.TDB2;
 import org.apache.jena.tdb2.solver.QueryEngineTDB;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 
-public class QueryEngineRAW extends QueryEngineSage {
+public class QueryEngineRAW extends QueryEngineTDB {
 
     protected QueryEngineRAW(Op op, DatasetGraphTDB dataset, Binding input, Context context) {
         super(op, dataset, input, context);
-        QC.setFactory(dataset.getContext(), new OpExecutorRAW.OpExecutorRandomFactory(context));
     }
 
     protected QueryEngineRAW(Query query, DatasetGraphTDB dataset, Binding input, Context context) {
         super(query, dataset, input, context);
-        QC.setFactory(dataset.getContext(), new OpExecutorRAW.OpExecutorRandomFactory(context));
     }
 
     static public void register() {
@@ -50,30 +52,29 @@ public class QueryEngineRAW extends QueryEngineSage {
             Explain.explain("REWRITE(Union default graph)", op, context);
         }
 
+        if (op instanceof OpSlice) {
+            // we get the min of all limits
+            RAWInput rawInput = context.get(RAWConstants.input);
+            rawInput.setLimit(Math.min(rawInput.limit, ((OpSlice) op).getLength()));
+        }
+
         // #2 comes from {@link QueryEngineBase}
         ExecutionContext execCxt = new ExecutionContext(context, dsg.getDefaultGraph(), dsg,
                 new OpExecutorRAW.OpExecutorRandomFactory(context));
 
-        /*
-        if (execCxt.getContext().isUndef(SageConstants.input)) { // <=> setIfUndef
-            // (TODO) improve , should this be here? should this have Sage ref' removed ?
-            long limit = execCxt.getContext().getLong(SageConstants.limit, Long.MAX_VALUE);
-            // always have a timeout otherwise could be infinite looping. Here arbitrarily set to 60s.
-            long timeout = execCxt.getContext().getLong(SageConstants.timeout, 60000);
-            SageInput<?> sageInput = new SageInput<>().setLimit(limit).setTimeout(timeout);
+        IdentifierLinker.create(execCxt, op, true);
 
-            execCxt.getContext().set(SageConstants.input, sageInput);
-        } */
-
-        // #3 inbetween we add our home-made counter iterator :)
-        RAWCounterIter counterIter = new RAWCounterIter(op, input, execCxt);
+        RAWCounterIter ci = new RAWCounterIter(op, input, execCxt);
 
         // Wrap with something to check for closed iterators.
-        QueryIterator qIter = QueryIteratorCheck.check(counterIter, execCxt) ;
+        QueryIterator cIter = QueryIteratorCheck.check(ci, execCxt) ;
         // Need call back.
-        if ( context.isTrue(ARQ.enableExecutionTimeLogging) )
-            qIter = QueryIteratorTiming.time(qIter) ;
-        return qIter ;
+        if (context.isTrue(ARQ.enableExecutionTimeLogging))
+            cIter = QueryIteratorTiming.time(cIter);
+
+
+
+        return new PreemptRootIter((QueryIterator)cIter, execCxt);
     }
 
     /* ******************** Factory ********************** */
@@ -87,13 +88,13 @@ public class QueryEngineRAW extends QueryEngineSage {
 
         @Override
         public Plan create(Query query, DatasetGraph dataset, Binding input, Context context) {
-            QueryEngineSage engine = new QueryEngineRAW(query, dsgToQuery(dataset), input, context);
+            QueryEngineBase engine = new QueryEngineRAW(query, dsgToQuery(dataset), input, context);
             return engine.getPlan();
         }
 
         @Override
         public Plan create(Op op, DatasetGraph dataset, Binding binding, Context context) {
-            QueryEngineSage engine = new QueryEngineRAW(op, dsgToQuery(dataset), binding, context);
+            QueryEngineBase engine = new QueryEngineRAW(op, dsgToQuery(dataset), binding, context);
             return engine.getPlan();
         }
 
@@ -109,7 +110,7 @@ public class QueryEngineRAW extends QueryEngineSage {
         }
 
         private static boolean isNotInfiniteRandomWalking(Context context) {
-            return context.isDefined(SageConstants.limit) || context.isDefined(SageConstants.timeout);
+            return context.isDefined(RAWConstants.limit) || context.isDefined(RAWConstants.timeout);
         }
 
         private static boolean onlySELECT(Query query) {

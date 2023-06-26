@@ -1,46 +1,70 @@
 package fr.gdd.sage;
 
-import fr.gdd.sage.arq.OpExecutorSage;
 import fr.gdd.sage.arq.SageConstants;
-import org.apache.jena.sparql.engine.iterator.ScanIteratorFactory;
-import fr.gdd.sage.configuration.SageServerConfiguration;
-import org.apache.jena.sparql.algebra.op.OpConditional;
-import org.apache.jena.sparql.algebra.op.OpJoin;
-import org.apache.jena.sparql.algebra.op.OpUnion;
+import fr.gdd.sage.io.RAWInput;
+import fr.gdd.sage.io.RAWOutput;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.iterator.*;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.OpExecutorFactory;
 import org.apache.jena.sparql.util.Context;
+import org.apache.jena.tdb2.solver.PatternMatchSage;
 
-import java.util.Objects;
+import java.util.HashMap;
 
 /**
  * Executes a random branch of the tree that represents a query.
  */
-public class OpExecutorRAW extends OpExecutorSage {
+public class OpExecutorRAW extends OpExecutor {
 
     public static class OpExecutorRandomFactory implements OpExecutorFactory {
-        SageServerConfiguration configuration;
+        RAWInput configuration;
 
         public OpExecutorRandomFactory(Context context) {
-            configuration = new SageServerConfiguration(context);
+            configuration = new RAWInput(context);
         }
 
         @Override
         public OpExecutor create(ExecutionContext context) {
-            return new OpExecutorRAW(context, configuration);
+            return new OpExecutorRAW(context, new RAWInput(context.getContext()));
         }
     }
 
-    public OpExecutorRAW(ExecutionContext context, SageServerConfiguration configuration) {
-        super(context, configuration);
-        ScanIteratorFactory scanFactory = context.getContext().get(SageConstants.scanFactory);
-        if (Objects.isNull(scanFactory) || !(scanFactory instanceof RAWScanIteratorFactory)) {
-            // since it inherits from Sage, it may be already set to preemptScanIteratorFactory, so we reset
-            context.getContext().set(SageConstants.scanFactory, new RAWScanIteratorFactory(context));
-        }
+    public OpExecutorRAW(ExecutionContext context, RAWInput configuration) {
+        super(context);
+        this.execCxt.getContext().set(RAWConstants.input, configuration);
+        this.execCxt.getContext().setIfUndef(RAWConstants.output, new RAWOutput());
+        this.execCxt.getContext().setIfUndef(SageConstants.scanFactory, new RAWScanIteratorFactory(context));
+        this.execCxt.getContext().setIfUndef(SageConstants.cursor, 0);
+        this.execCxt.getContext().setIfUndef(SageConstants.iterators, new HashMap());
+    }
+
+    @Override
+    protected QueryIterator exec(Op op, QueryIterator input) {
+        return super.exec(op, input);
+    }
+
+    @Override
+    protected QueryIterator execute(OpBGP opBGP, QueryIterator input) {
+        return PatternMatchSage.matchTriplePattern(opBGP.getPattern(), input, execCxt);
+    }
+
+    @Override
+    protected QueryIterator execute(OpTriple opTriple, QueryIterator input) {
+        return PatternMatchSage.matchTriplePattern(opTriple.asBGP().getPattern(), input, execCxt);
+    }
+
+    @Override
+    protected QueryIterator execute(OpQuadPattern quadPattern, QueryIterator input) {
+        return PatternMatchSage.matchQuadPattern(quadPattern.getBasicPattern(), quadPattern.getGraphNode(), input, execCxt);
+    }
+
+    @Override
+    protected QueryIterator execute(OpQuad opQuad, QueryIterator input) {
+        return PatternMatchSage.matchQuadPattern(opQuad.asQuadPattern().getBasicPattern(), opQuad.getQuad().getGraph(), input, execCxt);
     }
 
     @Override

@@ -12,6 +12,7 @@ import org.apache.jena.query.ReadWrite;
 import org.apache.jena.sparql.algebra.op.OpBGP;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.iterator.RAWScanIteratorFactory;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.tdb2.solver.BindingNodeId;

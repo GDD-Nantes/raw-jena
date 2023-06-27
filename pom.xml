@@ -80,6 +80,11 @@
         <artifactId>sage-jena-volcano</artifactId>
         <version>${sage.version}</version>
       </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>sage-jena-module</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
 
       <!-- actual dependencies -->
       <dependency>

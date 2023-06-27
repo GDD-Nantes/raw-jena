@@ -9,12 +9,19 @@ import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingBase;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
+import org.apache.jena.util.iterator.NullIterator;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -30,15 +37,17 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
     ExecutionContext context;
 
     NodeTupleTable ntt;
+    Var[] vars;
 
 
-    public RAWJenaIteratorWrapper(Iterator<Tuple<NodeId>> wrapped, Integer id, NodeTupleTable nodeTupleTable, ExecutionContext context) {
+    public RAWJenaIteratorWrapper(Iterator<Tuple<NodeId>> wrapped, Integer id, Var[] vars, NodeTupleTable nodeTupleTable, ExecutionContext context) {
         this.wrapped = wrapped;
         this.input = context.getContext().get(RAWConstants.input);
         this.output = context.getContext().get(RAWConstants.output);
         this.context = context;
         this.id = id;
         this.ntt = nodeTupleTable;
+        this.vars = vars;
 
         HashMap<Integer, RAWJenaIteratorWrapper> iterators = this.context.getContext().get(SageConstants.iterators);
         iterators.put(id, this);
@@ -64,9 +73,27 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
         return wrapped;
     }
 
-    public Tuple<Node> getCurrent() {
+    public Binding getCurrent() {
+        BindingBuilder result = Binding.builder();
+        if (wrapped instanceof NullIterator) {
+            return result.build(); // nothing
+        }
+
         Tuple<NodeId> nodeIds = ((RAWJenaIterator) wrapped).getCurrent();
-        Tuple<Node> nodes = TupleFactory.create(nodeIds.stream().map(i -> ntt.getNodeTable().getNodeForNodeId(i)).collect(Collectors.toList()));
-        return nodes;
+
+        for (int i = 0; i < vars.length; ++i) {
+            if (Objects.nonNull(vars[i])) {
+                result.add(vars[i], ntt.getNodeTable().getNodeForNodeId(nodeIds.get(i)));
+            }
+        }
+        return result.build();
+    }
+
+    public long getCardinality() {
+        if (wrapped instanceof NullIterator) {
+            return 0L;
+        } else {
+            return ((RAWJenaIterator) wrapped).cardinality();
+        }
     }
 }

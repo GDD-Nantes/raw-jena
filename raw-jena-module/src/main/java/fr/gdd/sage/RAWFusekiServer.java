@@ -33,7 +33,7 @@ public class RAWFusekiServer {
     @CommandLine.Option(names = "--ui", description = "The path to your UI folder.")
     public String ui;
 
-    @CommandLine.Option(names = "--limit", description = "The maximum number of random walks per query (default: 1M).")
+    @CommandLine.Option(names = "--limit", description = "The maximum number of random walks per query (default: 10K).")
     public Long limit;
 
     @CommandLine.Option(names = "--timeout", description = "The maximal duration of random walks (default: 60K ms).")
@@ -57,11 +57,13 @@ public class RAWFusekiServer {
         }
 
         if (Objects.isNull(serverOptions.timeout)) {
+            // as in most public endpoints
             serverOptions.timeout = 60000L;
         }
 
         if (Objects.isNull(serverOptions.limit)) {
-            serverOptions.limit = 1000000L;
+            // as in dbpedia
+            serverOptions.limit = 10000L;
         }
 
         if (Objects.isNull(serverOptions.database)) {

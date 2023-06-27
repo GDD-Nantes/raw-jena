@@ -3,17 +3,11 @@ package fr.gdd.sage.fuseki;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.gdd.sage.RAWConstants;
-import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.RAWInput;
-import fr.gdd.sage.io.SageInput;
-import fr.gdd.sage.io.SageOutput;
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.jena.ext.xerces.impl.dv.util.Base64;
 import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**

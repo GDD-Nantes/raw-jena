@@ -4,6 +4,7 @@ import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.RAWOutput;
+import fr.gdd.sage.io.RAWOutputAggregated;
 import fr.gdd.sage.io.SageInput;
 import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.sparql.algebra.Op;
@@ -28,14 +29,15 @@ public class RAWCounterIter extends QueryIterRepeatApply {
 
     RAWInput input;
     RAWOutput output;
+    RAWOutputAggregated outputAggregated;
     Op op;
     Binding initialBinding;
     QueryIterator current;
 
     public RAWCounterIter(Op op, Binding initialBinding, ExecutionContext context) {
         super(QueryIterRoot.create(context), context); // `QueryIterRoot.create` to avoid complaints of super.
-        // input = context.getContext().get(RAWConstants.input);
         output = context.getContext().get(RAWConstants.output);
+        outputAggregated = context.getContext().get(RAWConstants.outputAggregated);
         this.initialBinding = initialBinding;
         this.op = op;
         this.nextStage(initialBinding);
@@ -61,7 +63,12 @@ public class RAWCounterIter extends QueryIterRepeatApply {
 
     @Override
     protected boolean hasNextBinding() {
+
         while (!current.hasNext() && !stoppingCondition()) {
+            getExecContext().getContext().set(SageConstants.cursor, 0);
+            HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
+            outputAggregated.addResult(iterators);
+            output.addResultThenClear(iterators);
             nextStage(initialBinding);
         }
 
@@ -74,11 +81,7 @@ public class RAWCounterIter extends QueryIterRepeatApply {
 
     @Override
     protected Binding moveToNextBinding() {
-        nbResults += 1;
-
-        HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
-        output.addResultThenClear(iterators);
-
+        nbResults += 1; // got an actual result
         return current.next();
     }
 

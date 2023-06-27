@@ -30,6 +30,10 @@
     </dependency>
     <dependency>
       <groupId>fr.gdd.sage</groupId>
+      <artifactId>sage-jena-module</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>fr.gdd.sage</groupId>
       <artifactId>raw-jena-volcano</artifactId>
     </dependency>
 
@@ -67,7 +71,12 @@
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
-    
+    <dependency>
+      <groupId>fr.gdd.sage</groupId>
+      <artifactId>raw-jena-module</artifactId>
+      <version>0.0.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>

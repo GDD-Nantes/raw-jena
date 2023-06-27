@@ -4,6 +4,7 @@ import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.dboe.trans.bplustree.PreemptTupleIndexRecord;
 import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
@@ -33,7 +34,7 @@ public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implement
     }
 
     @Override
-    public Iterator<Tuple<NodeId>> getScan(NodeTupleTable nodeTupleTable, Tuple<NodeId> pattern, Integer id) {
+    public Iterator<Tuple<NodeId>> getScan(NodeTupleTable nodeTupleTable, Tuple<NodeId> pattern, Var[] vars, Integer id) {
         PreemptTupleIndexRecord.IteratorBuilder builder = null;
         if (pattern.len() < 4) {
             PreemptTupleIndexRecord ptir = preemptTripleTupleTable.findIndex(pattern);
@@ -46,6 +47,6 @@ public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implement
         Iterator<Tuple<NodeId>> wrapped = Objects.isNull(builder.ptir) ?
                 new NullIterator<>():
                 new RAWJenaIterator(builder.ptir, builder.min, builder.max);
-        return new RAWJenaIteratorWrapper(wrapped, id, nodeTupleTable, context);
+        return new RAWJenaIteratorWrapper(wrapped, id, vars, nodeTupleTable, context);
     }
 }

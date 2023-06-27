@@ -5,6 +5,7 @@ import fr.gdd.sage.arq.QueryEngineSage;
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.RAWOutput;
+import fr.gdd.sage.io.RAWOutputAggregated;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Op;
@@ -64,6 +65,7 @@ public class QueryEngineRAW extends QueryEngineTDB {
                 new OpExecutorRAW.OpExecutorRandomFactory(context));
 
         execCxt.getContext().setIfUndef(RAWConstants.output, new RAWOutput());
+        execCxt.getContext().setIfUndef(RAWConstants.outputAggregated, new RAWOutputAggregated());
         execCxt.getContext().set(RAWConstants.input, new RAWInput(execCxt.getContext()));
 
         IdentifierLinker.create(execCxt, op, true);

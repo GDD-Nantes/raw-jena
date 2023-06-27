@@ -12,7 +12,7 @@ import org.apache.jena.sparql.util.Context;
 /**
  * Write a SageOutput to an out-stream.
  */
-public class OutputWriterJSONSage implements ModuleOutputWriter {
+public class OutputWriterJSONRAW implements ModuleOutputWriter {
 
     @Override
     public void write(IndentedWriter writer, Context context) {

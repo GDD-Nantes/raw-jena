@@ -1,20 +1,27 @@
 package fr.gdd.sage.io;
 
-import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
-import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Objects being return to the client.
+ * Objects being returned to the client. It contains the most of random walks: individual bindings
+ * with their respective cardinality. Of course, it is also the most expensive, especially on
+ * traffic since it may be sent through the network.
+ * <br />
+ * Depending on the application, it may be wiser to get an aggregated version of these output.
  */
 public class RAWOutput {
 
     Integer nbScans = 0;
 
     List<HashMap<Integer, Long>> cardinalities = new ArrayList<>();
-    List<Set<Node>> bindings = new ArrayList<>();
+    List<Binding> bindings = new ArrayList<>();
 
     public RAWOutput() {}
 
@@ -34,16 +41,15 @@ public class RAWOutput {
      * @param iterators The map id_of_iterator to actual iterator.
      */
     public void addResultThenClear(HashMap<Integer, RAWJenaIteratorWrapper> iterators) {
-        HashSet<Node> b = new HashSet<>();
+        BindingBuilder b = BindingBuilder.create();
         HashMap<Integer, Long> c = new HashMap<>();
         for (Map.Entry<Integer, RAWJenaIteratorWrapper> kv : iterators.entrySet()) {
-            b.addAll(kv.getValue().getCurrent().asList());
-            c.put(kv.getKey(), ((RAWJenaIterator) kv.getValue().getWrapped()).cardinality());
-
+            b.addAll(kv.getValue().getCurrent());
+            c.put(kv.getKey(), kv.getValue().getCardinality());
         }
         iterators.clear();
         cardinalities.add(c);
-        bindings.add(b);
+        bindings.add(b.build());
     }
 
 }

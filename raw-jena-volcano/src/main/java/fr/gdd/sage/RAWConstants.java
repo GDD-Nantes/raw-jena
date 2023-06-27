@@ -15,6 +15,7 @@ public class RAWConstants {
     public static Symbol limit   = allocConstantSymbol("Limit");
 
     public static Symbol output = allocVariableSymbol("Output");
+    public static Symbol outputAggregated = allocVariableSymbol("OutputAggregated");
     public static Symbol input = allocVariableSymbol("Input");
 
     public static Symbol allocConstantSymbol(String name) {

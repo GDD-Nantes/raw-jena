@@ -5,6 +5,7 @@ import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleMap;
 import org.apache.jena.dboe.base.buffer.RecordBuffer;
 import org.apache.jena.dboe.base.record.Record;
+import org.apache.jena.graph.Node;
 import org.apache.jena.tdb2.lib.TupleLib;
 import org.apache.jena.tdb2.store.NodeId;
 
@@ -51,6 +52,10 @@ public class RAWJenaIterator implements Iterator<Tuple<NodeId>>, RandomIterator 
 
     @Override
     public Tuple<NodeId> next() {
+        return current;
+    }
+
+    public Tuple<NodeId> getCurrent() {
         return current;
     }
 

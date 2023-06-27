@@ -46,6 +46,6 @@ public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implement
         Iterator<Tuple<NodeId>> wrapped = Objects.isNull(builder.ptir) ?
                 new NullIterator<>():
                 new RAWJenaIterator(builder.ptir, builder.min, builder.max);
-        return new RAWJenaIteratorWrapper(wrapped, id, context);
+        return new RAWJenaIteratorWrapper(wrapped, id, nodeTupleTable, context);
     }
 }

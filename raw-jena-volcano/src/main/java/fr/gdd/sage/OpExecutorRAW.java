@@ -35,7 +35,7 @@ public class OpExecutorRAW extends OpExecutor {
 
     public OpExecutorRAW(ExecutionContext context, RAWInput configuration) {
         super(context);
-        this.execCxt.getContext().set(RAWConstants.input, configuration);
+        this.execCxt.getContext().setIfUndef(RAWConstants.input, configuration);
         this.execCxt.getContext().setIfUndef(RAWConstants.output, new RAWOutput());
         this.execCxt.getContext().setIfUndef(SageConstants.scanFactory, new RAWScanIteratorFactory(context));
         this.execCxt.getContext().setIfUndef(SageConstants.cursor, 0);

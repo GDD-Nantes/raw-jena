@@ -17,7 +17,7 @@ public class RAWInput implements Serializable {
 
     public RAWInput() {}
 
-    public RAWInput(Context context) {
+    public  RAWInput(Context context) {
         // server first, then client input
         this.limit = context.isDefined(RAWConstants.limit) ? context.get(RAWConstants.limit) : limit;
         this.limit = Math.min(this.limit, ((RAWInput)context.get(RAWConstants.input)).limit);

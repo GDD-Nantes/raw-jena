@@ -1,0 +1,20 @@
+name: 'Tests Report'
+
+on:
+  workflow_run:
+    workflows: ['Tests']
+    types:
+      - completed
+      
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dorny/test-reporter@v1
+      with:
+        artifact: test-results            # artifact name
+        name: Java Tests                  # Name of the check run which will be created
+        path: ./*/target/surefire-reports/*.xml # prefixed with * since they are in submodules
+        # path: '*.xml'                     # Path to test results (inside artifact .zip)
+        reporter: java-junit              # Format of test results
+

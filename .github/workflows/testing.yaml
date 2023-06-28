@@ -1,0 +1,32 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '20'
+          architecture: x64
+          cache: maven
+
+      - name: Build modules
+        run: mvn --batch-mode --update-snapshots package -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+      - name: Run tests of modules
+        run: mvn --batch-mode --update-snapshots -Dmaven.test.failure.ignore=true test -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+      - uses: actions/upload-artifact@v2  # upload test results
+        #   if: always()
+        if: success() || failure()        # run this step even if previous step failed
+        with:
+          name: test-results
+          path: ./*/target/surefire-reports/*.xml # prefixed with * since they are in submodules
+          # path: jest-junit.xml
+      

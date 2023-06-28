@@ -4,6 +4,7 @@ import fr.gdd.sage.QueryEngineRAW;
 import fr.gdd.sage.arq.QueryEngineSage;
 import fr.gdd.sage.writers.ExtensibleRowSetWriterJSON;
 import fr.gdd.sage.writers.ModuleOutputRegistry;
+import fr.gdd.sage.writers.OutputWriterJSONRAW;
 import fr.gdd.sage.writers.OutputWriterJSONSage;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.sys.FusekiModule;
@@ -50,7 +51,7 @@ public class RAWModule implements FusekiModule {
         // all writers are here : <https://github.com/apache/jena/tree/main/jena-arq/src/main/java/org/apache/jena/riot/rowset/rw>
         // (TODO) get them all
         RowSetWriterRegistry.register(ResultSetLang.RS_JSON, ExtensibleRowSetWriterJSON.factory);
-        ModuleOutputRegistry.register(ResultSetLang.RS_JSON, new OutputWriterJSONSage());
+        ModuleOutputRegistry.register(ResultSetLang.RS_JSON, new OutputWriterJSONRAW());
     }
 
     /**

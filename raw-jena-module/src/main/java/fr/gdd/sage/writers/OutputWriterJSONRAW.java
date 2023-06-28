@@ -1,33 +1,52 @@
 package fr.gdd.sage.writers;
 
-import fr.gdd.sage.arq.SageConstants;
-import fr.gdd.sage.fuseki.RAWModule;
-import fr.gdd.sage.io.SageOutput;
-import org.apache.commons.lang3.SerializationUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.gdd.sage.RAWConstants;
+import fr.gdd.sage.fuseki.SageModule;
+import fr.gdd.sage.io.RAWOutput;
+import fr.gdd.sage.io.RAWOutputAggregated;
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.atlas.json.io.JSWriter;
-import org.apache.jena.ext.xerces.impl.dv.util.Base64;
 import org.apache.jena.sparql.util.Context;
 
 /**
- * Write a SageOutput to an out-stream.
+ * Write the results of random walks as JSON.
  */
 public class OutputWriterJSONRAW implements ModuleOutputWriter {
 
     @Override
     public void write(IndentedWriter writer, Context context) {
-        SageOutput<?> output = context.get(SageConstants.output);
+        RAWOutputAggregated outputAggregated = context.get(RAWConstants.outputAggregated);
 
-        if (output == null || output.getState()==null) {
-            return;
-        }
         writer.print(" ,");
-        writer.print(JSWriter.outputQuotedString(RAWModule.class.getSimpleName()));
+        writer.print(JSWriter.outputQuotedString(RAWOutputAggregated.class.getSimpleName()));
         writer.println(" : ");
 
-        byte[] serialized = SerializationUtils.serialize(output);
-        String encoded = Base64.encode(serialized);
-        writer.println(JSWriter.outputQuotedString(encoded));
+        ObjectMapper mapper2 = new ObjectMapper();
+        String outputAggregated_asJSON = null;
+        try {
+            outputAggregated_asJSON = mapper2.writeValueAsString(outputAggregated);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        writer.println(outputAggregated_asJSON);
+
+        RAWOutput output = context.get(RAWConstants.output);
+        writer.print(" ,");
+        writer.print(JSWriter.outputQuotedString(RAWOutput.class.getSimpleName()));
+        writer.println(" : ");
+
+        ObjectMapper mapper = new ObjectMapper();
+        String output_asJSON = null;
+        try {
+            output_asJSON = mapper.writeValueAsString(output);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        writer.println(output_asJSON);
     }
 
 }

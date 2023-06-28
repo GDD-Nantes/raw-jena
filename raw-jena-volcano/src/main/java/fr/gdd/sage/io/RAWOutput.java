@@ -1,9 +1,11 @@
 package fr.gdd.sage.io;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,12 +18,12 @@ import java.util.Map;
  * <br />
  * Depending on the application, it may be wiser to get an aggregated version of these output.
  */
-public class RAWOutput {
+public class RAWOutput implements Serializable {
 
     Integer nbScans = 0;
 
     List<HashMap<Integer, Long>> cardinalities = new ArrayList<>();
-    List<Binding> bindings = new ArrayList<>();
+    List<SerializableBinding> bindings = new ArrayList<>();
 
     public RAWOutput() {}
 
@@ -49,7 +51,14 @@ public class RAWOutput {
         }
         iterators.clear();
         cardinalities.add(c);
-        bindings.add(b.build());
+        bindings.add(new SerializableBinding(b.build()));
     }
 
+    public List<SerializableBinding> getBindings() {
+        return bindings;
+    }
+
+    public List<HashMap<Integer, Long>> getCardinalities() {
+        return cardinalities;
+    }
 }

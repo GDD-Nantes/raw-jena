@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="./node_modules/@triply/yasgui/build/yasgui.min.css" rel="stylesheet" type="text/css" />
+    <link href="./css/style.css" rel="stylesheet" />
+    <script src="./node_modules/@triply/yasgui/build/yasgui.min.js"></script>
+    <script src="./src/RAWPlugin.js"></script>
+    <script src="./src/PAYGQuery.js"></script>
+  </head>
+  
+  <body>
+    <div class="header">
+      <span class="logo">R.A.W</span>
+      <span class="github">
+        <a href="https://github.com/Chat-Wane/raw-jena">
+        <img src="./res/github-mark.svg"
+             alt="GitHub repository of RAW"
+             height="30px"
+             width="30px" />
+        </a>
+      </span>
+    </div>
+    
+    <div id="yasgui"></div>
+    <script>
+      // registering of plugins must be done before Yasgui() ofc.
+      Yasr.registerPlugin("RAW", RAWPlugin);
+      
+      const yasgui = new Yasgui(document.getElementById("yasgui"), {
+          requestConfig: {
+              endpoint: "http://localhost:8080/watdiv10M",
+              // (TODO) make sure these are recognized by the server
+              // (TODO) if they do not exist, should run the query normally
+              args: [{name:"limit", value:"100"},
+                     {name:"timeout", value:"1000"}],
+          },
+          copyEndpointOnNewTab: false,
+      })
+
+      const yasqe = yasgui.getTab().yasqe;
+      const yasr  = yasgui.getTab().yasr;
+
+      var paygQuery = new PAYGQuery(yasqe.getValue());
+      
+      yasqe.on("query", (instance, req) => {
+          var newPaygQuery = new PAYGQuery(yasqe.getValue());
+          if (!newPaygQuery.equals(paygQuery)) {
+              paygQuery = newPaygQuery;
+          }
+      });
+
+      // (TODO) put an identifier in the query.
+      yasqe.on("queryResponse", (instance, resp, duration) => {
+          // (TODO) check if everything HTTP code
+          var data = JSON.parse(resp.text);
+          var bindings = data.results.bindings;
+          paygQuery.addDuration(duration);
+          paygQuery.addBindings(bindings);
+          resp.body.results.bindings = paygQuery.bindings; // ugly
+          yasr.setResponse(resp, paygQuery.totalDuration)
+      });
+
+      // monkey-patch the response informations label
+      updateResponseInfo = yasr.updateResponseInfo;
+      yasr.updateResponseInfo = function() {
+          yasr.results.bindings = paygQuery.bindings
+          updateResponseInfo.call(yasr)
+          yasr.dataElement.innerText += " (" + paygQuery.nbTimes + " pause/resume)"
+      };
+      
+    </script>
+  </body>
+
+</html>

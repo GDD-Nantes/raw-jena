@@ -128,7 +128,7 @@ class RAWJenaIteratorCardinalityTest {
         PreemptStageMatchTuple.prepare(nodeTupleTable.getNodeTable(), patternTuple, BindingNodeId.root, ids, vars);
 
         RAWScanIteratorFactory f = new RAWScanIteratorFactory(execCxt);
-        return (RAWJenaIterator) f.getScan(nodeTupleTable, TupleFactory.create(ids), 12);
+        return (RAWJenaIterator) f.getScan(nodeTupleTable, TupleFactory.create(ids), vars, 12);
     }
 
 

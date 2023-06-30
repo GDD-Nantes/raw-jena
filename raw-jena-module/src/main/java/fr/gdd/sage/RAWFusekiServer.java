@@ -107,7 +107,7 @@ public class RAWFusekiServer {
                 // .parseConfigFile("configurations/sage.ttl")
                 .enablePing(true)
                 .enableCompact(true)
-                // .enableCors(true)
+                .enableCors(true)
                 .enableStats(true)
                 .enableTasks(true)
                 .enableMetrics(true)

@@ -43,11 +43,6 @@ public class OpExecutorRAW extends OpExecutor {
     }
 
     @Override
-    protected QueryIterator exec(Op op, QueryIterator input) {
-        return super.exec(op, input);
-    }
-
-    @Override
     protected QueryIterator execute(OpBGP opBGP, QueryIterator input) {
         return PatternMatchSage.matchTriplePattern(opBGP.getPattern(), input, execCxt);
     }

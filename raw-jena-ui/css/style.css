@@ -62,14 +62,25 @@
     margin-right: 15px;
 }
 
-body {
+html, body {
     color: var(--polar-night-4);
     margin-left : 0px;
     margin-right : 0px;
     margin-top : 0px;
     margin-bottom : 0px;
+    height: 100%;
 }
 
 .tabsList {
     display: none !important;
+}
+
+.footer {
+    position: sticky;
+    top: 100%;
+    font-family: "Iosevka";
+}
+
+.text-center {
+    text-align: center;
 }

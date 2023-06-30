@@ -1,5 +1,6 @@
+import {PAYGQuery} from "./PAYGQuery";
 
-class RAWPlugin {
+export class RAWPlugin {
 
     priority = 10;
     hideFromSelection = false;
@@ -15,6 +16,16 @@ class RAWPlugin {
             
         const el2 = document.createElement("div");
         this.yasr.resultsEl.appendChild(el2);
+
+        var paygQuery = new PAYGQuery("meow");
+        paygQuery.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
+        el2.innerHTML = "Estimated number of elements " + Math.round(paygQuery.estimateCount());
+
+        // (TODO) confidence seems way higher than it should be. Double check formula
+        var allCardinalities = this.yasr.results.json.RAWOutput.cardinalities;
+        let confidence = paygQuery.confidence(0.95, allCardinalities);
+        el2.innerHTML += " +- " + Math.round(confidence);
+        
     }
 
     canHandleResults() {

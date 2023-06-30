@@ -14,8 +14,11 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.jena.fuseki.main.FusekiServer;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.tdb2.TDB2Factory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -37,13 +40,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class RAWFusekiServerTest {
     private static Logger log = LoggerFactory.getLogger(RAWFusekiServerTest.class);
 
-    @Disabled
+    @EnabledIfEnvironmentVariable(named = "WATDIV", matches = "true")
     @Test
     public void start_a_server_and_run_a_query_on_it() throws IOException, ParserConfigurationException, SAXException {
         long LIMIT = 2;
 
         Watdiv10M watdiv = new Watdiv10M(Optional.of("../target/"));
-        FusekiServer server = RAWFusekiServer.buildServer(watdiv.dbPath_asStr, null);
+        Dataset dataset = TDB2Factory.connectDataset(watdiv.dbPath_asStr);
+        FusekiServer server = RAWFusekiServer.buildServer(watdiv.dbPath_asStr, dataset, null);
         server.start();
 
         String url_asString = server.serverURL() + "watdiv10M/query";

@@ -5,8 +5,8 @@
     <link href="./node_modules/@triply/yasgui/build/yasgui.min.css" rel="stylesheet" type="text/css" />
     <link href="./css/style.css" rel="stylesheet" />
     <script src="./node_modules/@triply/yasgui/build/yasgui.min.js"></script>
-    <script src="./src/RAWPlugin.js"></script>
-    <script src="./src/PAYGQuery.js"></script>
+    <script type="module" src="./src/PAYGQuery.js"></script>
+    <script type="module" src="./src/RAWPlugin.js"></script>
   </head>
   
   <body>
@@ -23,7 +23,22 @@
     </div>
     
     <div id="yasgui"></div>
-    <script>
+
+
+    <footer class="footer">
+      <p class="text-center">
+        Ⓒ 2017–2023
+        <a href="https://sites.google.com/site/gddlina/">GDD Team</a>,
+        <a href="https://www.ls2n.fr?lang=en">LS2N</a>,
+        <a href="http://www.univ-nantes.fr/">University of Nantes</a>
+      </p>
+    </footer>
+
+    
+    <script type="module">
+      /// import {PAYGQuery} from "./PAYGQuery";
+      import {RAWPlugin} from "./src/RAWPlugin";
+      import {PAYGQuery} from "./src/PAYGQuery";
       // registering of plugins must be done before Yasgui() ofc.
       Yasr.registerPlugin("RAW", RAWPlugin);
       
@@ -57,12 +72,17 @@
           var bindings = data.results.bindings;
           paygQuery.addDuration(duration);
           paygQuery.addBindings(bindings);
+          console.log(data);
+          paygQuery.addRAWAggregated(data.RAWOutputAggregated);
           resp.body.results.bindings = paygQuery.bindings; // ugly
+          resp.body.RAWOutputAggregated.node2cardinality = paygQuery.node2cardinality; // ugly
+          resp.body.RAWOutputAggregated.node2nbWalks = paygQuery.node2nbWalks; // ugly
+          console.log(resp);
           yasr.setResponse(resp, paygQuery.totalDuration)
       });
 
       // monkey-patch the response informations label
-      updateResponseInfo = yasr.updateResponseInfo;
+      const updateResponseInfo = yasr.updateResponseInfo;
       yasr.updateResponseInfo = function() {
           yasr.results.bindings = paygQuery.bindings
           updateResponseInfo.call(yasr)

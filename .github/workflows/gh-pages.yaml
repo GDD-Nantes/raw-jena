@@ -17,13 +17,12 @@ jobs:
         with:
           node-version: 20
           working-directory: raw-jena-ui
-      - run: npm install
+      - run: npm install -prefix ./raw-jena-ui
         
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        working-directory: raw-jena-ui
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          publish_dir: ./raw-jena-ui
     
 

@@ -1,0 +1,19 @@
+export interface Plugin<Opts extends any> {
+    priority: number;
+    canHandleResults(): boolean;
+    hideFromSelection?: boolean;
+    label?: string;
+    options?: Opts;
+    initialize?(): Promise<void>;
+    destroy?(): void;
+    draw(persistentConfig: any, runtimeConfig?: any): Promise<void> | void;
+    getIcon(): Element | undefined;
+    download?(filename?: string): DownloadInfo | undefined;
+    helpReference?: string;
+}
+export interface DownloadInfo {
+    contentType: string;
+    getData: () => string;
+    filename: string;
+    title: string;
+}

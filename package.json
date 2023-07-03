@@ -1,0 +1,20 @@
+{
+    "name": "raw-jena-gui",
+    "version": "0.0.1",
+    "description": "Graphical user interface to execute SPARQL queries with RAW as plugin: enabling random walks and sampling.",
+    "main": "index.js",
+    "scripts": {
+        "server": "vite",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "chat-wane <grumpy.chat.wane@gmail.com>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@triply/yasgui": "^4.2.28",
+        "bootstrap-table": "^1.22.0",
+        "d3": "^7.8.5"
+    },
+    "devDependencies": {
+        "vite": "^4.3.9"
+    }
+}

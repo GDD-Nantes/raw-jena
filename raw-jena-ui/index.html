@@ -73,11 +73,12 @@
           paygQuery.addDuration(duration);
           paygQuery.addBindings(bindings);
           console.log(data);
-          paygQuery.addRAWAggregated(data.RAWOutputAggregated);
+          // paygQuery.addRAWAggregated(data.RAWOutputAggregated);
           resp.body.results.bindings = paygQuery.bindings; // ugly
-          resp.body.RAWOutputAggregated.node2cardinality = paygQuery.node2cardinality; // ugly
-          resp.body.RAWOutputAggregated.node2nbWalks = paygQuery.node2nbWalks; // ugly
-          console.log(resp);
+          // resp.body.RAWOutputAggregated.node2cardinality = paygQuery.node2cardinality; // ugly
+          // resp.body.RAWOutputAggregated.node2nbWalks = paygQuery.node2nbWalks; // ugly
+          paygQuery.updatePlan(data.RAWOutput.plan);
+        
           yasr.setResponse(resp, paygQuery.totalDuration)
       });
 

@@ -1,15 +1,23 @@
 import {PAYGQuery} from "./PAYGQuery";
 
+// Plugin that reads results of a SPARQL server.
+// If the answer includes RAW fields, it handles the additional data.
 export class RAWPlugin {
 
     priority = 10;
     hideFromSelection = false;
+    payg = new PAYGQuery("meow");
     
     constructor(yasr) {
         this.yasr = yasr;
     }
 
     draw() {
+        this.payg.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
+        this.payg.updatePlan(this.yasr.results.json.RAWOutput.plan);
+        this.payg.addCardinalities(this.yasr.results.json.RAWOutput.cardinalities);
+        this.payg.addWalks(this.yasr.results.json.RAWOutput.bindings);
+        
         const el = document.createElement("div");
         el.textContent = this.yasr.results.json.SageModule
         this.yasr.resultsEl.appendChild(el);
@@ -17,14 +25,16 @@ export class RAWPlugin {
         const el2 = document.createElement("div");
         this.yasr.resultsEl.appendChild(el2);
 
-        var paygQuery = new PAYGQuery("meow");
-        paygQuery.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
-        el2.innerHTML = "Estimated number of elements " + Math.round(paygQuery.estimateCount());
+        this.payg.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
+        el2.innerHTML = "Estimated number of elements " + Math.round(this.payg.estimateCount());
 
         // (TODO) confidence seems way higher than it should be. Double check formula
-        var allCardinalities = this.yasr.results.json.RAWOutput.cardinalities;
-        let confidence = paygQuery.confidence(0.95, allCardinalities);
+        var allCardinalities = this.payg.cardinalities;
+        let confidence = this.payg.confidence(0.95, allCardinalities);
         el2.innerHTML += " +- " + Math.round(confidence);
+        el2.innerHTML += " over " + this.payg.cardinalities.length + " RWs";
+
+        // el2.innerHTML += "<br/>" + Math.round(this.payg.plan);
         
     }
 

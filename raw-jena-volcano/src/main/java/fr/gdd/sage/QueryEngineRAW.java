@@ -64,7 +64,7 @@ public class QueryEngineRAW extends QueryEngineTDB {
         ExecutionContext execCxt = new ExecutionContext(context, dsg.getDefaultGraph(), dsg,
                 new OpExecutorRAW.OpExecutorRandomFactory(context));
 
-        execCxt.getContext().setIfUndef(RAWConstants.output, new RAWOutput());
+        execCxt.getContext().setIfUndef(RAWConstants.output, new RAWOutput(op));
         execCxt.getContext().setIfUndef(RAWConstants.outputAggregated, new RAWOutputAggregated());
         execCxt.getContext().set(RAWConstants.input, new RAWInput(execCxt.getContext()));
 

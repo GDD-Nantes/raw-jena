@@ -10,6 +10,10 @@ export class PAYGQuery {
         this.nbTimes = 0;
         this.node2cardinality = {};
         this.node2nbWalks = {};
+
+        this.plan = "";
+        this.cardinalities = [];
+        this.walks = []
     }
 
     addDuration(duration) {
@@ -27,6 +31,18 @@ export class PAYGQuery {
         this.mergeAggregated(this.node2nbWalks, aggregated.node2nbWalks);
     }
 
+    updatePlan(plan) {
+        this.plan = JSON.parse(plan);
+    }
+
+    addWalks(walks) {
+        this.walks = this.walks.concat(walks);
+    }
+
+    addCardinalities(cardinalities) {
+        this.cardinalities = this.cardinalities.concat(cardinalities);
+    }
+
 
 
     estimateCount() {
@@ -39,10 +55,8 @@ export class PAYGQuery {
 
     estimateCountOf(cardinalities) {
         let count = 1;
-        let maxK = 0;
         for (let k in cardinalities) {
             count *= cardinalities[k];
-            maxK = Math.max(k, maxK);
         }
         
         return count;
@@ -54,10 +68,11 @@ export class PAYGQuery {
         for (let i = 0; i < allCardinalities.length; ++i) {
             let count = this.estimateCountOf(allCardinalities[i]);
             let powered = Math.pow(count - globalAverage, 2);
-            sumOfPowered += powered;
+            let overN = powered/allCardinalities.length;
+            sumOfPowered += overN;
         }
         
-        return sumOfPowered/allCardinalities.length;
+        return Math.sqrt(sumOfPowered)/Math.sqrt(allCardinalities.length);
     }
 
     confidence(rate, allCardinalities) {

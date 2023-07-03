@@ -1,7 +1,6 @@
 package fr.gdd.sage.io;
 
-import com.fasterxml.jackson.annotation.JsonRootName;
-import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 
@@ -24,8 +23,11 @@ public class RAWOutput implements Serializable {
 
     List<HashMap<Integer, Long>> cardinalities = new ArrayList<>();
     List<SerializableBinding> bindings = new ArrayList<>();
+    Op plan;
 
-    public RAWOutput() {}
+    public RAWOutput(Op plan) {
+        this.plan = plan;
+    }
 
     /**
      * Another scan has been performed on a {@link org.apache.jena.dboe.trans.bplustree.BPlusTree}.
@@ -60,5 +62,9 @@ public class RAWOutput implements Serializable {
 
     public List<HashMap<Integer, Long>> getCardinalities() {
         return cardinalities;
+    }
+
+    public String getPlan() {
+        return (new OpSerializeJSON(this.plan)).result;
     }
 }

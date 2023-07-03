@@ -10,19 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-  steps:
-    - name: Install node 
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+    steps:
+      - name: Install node 
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 20
+            working-directory: raw-jena-ui
+        - run: npm install
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        working-directory: raw-jena-ui
         with:
-          node-version: 20
-      - working-directory: raw-jena-ui
-      - run: npm install
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      working-directory: raw-jena-ui
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
     
 

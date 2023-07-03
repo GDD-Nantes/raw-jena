@@ -1,4 +1,5 @@
 import {PAYGQuery} from "./PAYGQuery";
+import {PlanView} from "./PlanView";
 
 // Plugin that reads results of a SPARQL server.
 // If the answer includes RAW fields, it handles the additional data.
@@ -35,7 +36,11 @@ export class RAWPlugin {
         el2.innerHTML += " over " + this.payg.cardinalities.length + " RWs";
 
         // el2.innerHTML += "<br/>" + Math.round(this.payg.plan);
-        
+
+        const svg = document.createElement("svg");
+        this.yasr.resultsEl.appendChild(svg);
+        console.log(this.payg.plan);
+        new PlanView(this.payg.plan, svg);
     }
 
     canHandleResults() {

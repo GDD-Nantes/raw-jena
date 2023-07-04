@@ -1,7 +1,7 @@
 # RAW ⨯ Jena ⨯ UI
 
 **Web user interface** for RAW on top of Jena. It provides a
-(Yasgui)[https://github.com/TriplyDB/Yasgui] module that parses the
+[Yasgui](https://github.com/TriplyDB/Yasgui) module that parses the
 additional data retrieved from the RAW server and display them. Among
 others, it aims to provide users with additional insights about their
 queries, such as: 

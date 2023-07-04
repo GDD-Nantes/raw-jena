@@ -5,24 +5,18 @@ import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.RAWOutput;
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingBase;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.util.iterator.NullIterator;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Wraps the raw RAWJenaIterator with a layer that checks if stopping conditions are
@@ -80,6 +74,10 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
         }
 
         Tuple<NodeId> nodeIds = ((RAWJenaIterator) wrapped).getCurrent();
+
+        if (Objects.isNull(nodeIds)) {
+            return result.build();
+        }
 
         for (int i = 0; i < vars.length; ++i) {
             if (Objects.nonNull(vars[i])) {

@@ -30,16 +30,22 @@ public class RAWFusekiServer {
             description = "The path to your TDB2 database (default: downloads Watdiv10M).")
     public String database;
 
-    @CommandLine.Option(names = "--ui", description = "The path to your UI folder.")
-    public String ui;
+    @CommandLine.Option(names = "--port", description = "The port that gives access to the database (default: 3330).")
+    public Integer port;
+    private static Integer DEFAULT_PORT = 3330;
 
     @CommandLine.Option(names = "--limit", description = "The maximum number of random walks per query (default: 10K).")
     public Long limit;
+    private static Long DEFAULT_LIMIT = 10000L;
 
     @CommandLine.Option(names = "--timeout", description = "The maximal duration of random walks (default: 60K ms).")
     public Long timeout;
+    private static Long DEFAULT_TIMEOUT = 60000L;
 
-    @CommandLine.Option(names = {"-v", "--verbosity"}, description = "The verbosity level (ALL, INFO, FINE).")
+    @CommandLine.Option(names = "--ui", description = "The path to your UI folder (default: None).")
+    public String ui;
+
+    @CommandLine.Option(names = {"-v", "--verbosity"}, description = "The verbosity level (ALL, INFO, FINE) (default: None).")
     public String verbosity;
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Display this help message.")
@@ -58,12 +64,16 @@ public class RAWFusekiServer {
 
         if (Objects.isNull(serverOptions.timeout)) {
             // as in most public endpoints
-            serverOptions.timeout = 60000L;
+            serverOptions.timeout = DEFAULT_TIMEOUT;
         }
 
         if (Objects.isNull(serverOptions.limit)) {
             // as in dbpedia
-            serverOptions.limit = 10000L;
+            serverOptions.limit = DEFAULT_LIMIT;
+        }
+
+        if (Objects.isNull(serverOptions.port)) {
+            serverOptions.port = DEFAULT_PORT;
         }
 
         if (Objects.isNull(serverOptions.database)) {
@@ -90,7 +100,7 @@ public class RAWFusekiServer {
         dataset.getContext().setIfUndef(RAWConstants.limit, serverOptions.limit);
         dataset.getContext().setIfUndef(RAWConstants.timeout, serverOptions.timeout);
 
-        FusekiServer server = buildServer(serverOptions.database, dataset, serverOptions.ui);
+        FusekiServer server = buildServer(serverOptions.database, dataset, serverOptions.port, serverOptions.ui);
         server.start();
     }
 
@@ -100,7 +110,7 @@ public class RAWFusekiServer {
      * @param ui The path to the ui.
      * @return A fuseki server not yet running.
      */
-    static FusekiServer buildServer(String datasetPath, Dataset dataset, String ui) {
+    static FusekiServer buildServer(String datasetPath, Dataset dataset, Integer port, String ui) {
         FusekiModules.add(new RAWModule());
 
         FusekiServer.Builder serverBuilder = FusekiServer.create()
@@ -111,6 +121,7 @@ public class RAWFusekiServer {
                 .enableStats(true)
                 .enableTasks(true)
                 .enableMetrics(true)
+                .port(port)
                 .numServerThreads(1, 10)
                 // .loopback(false)
                 .serverAuthPolicy(Auth.ANY_ANON)

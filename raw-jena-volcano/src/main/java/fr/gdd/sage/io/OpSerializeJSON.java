@@ -19,7 +19,6 @@ public class OpSerializeJSON extends OpVisitorUnimplemented {
         this.identifiers = new IdentifierAllocator();
         op.visit(this.identifiers);
         op.visit(this);
-     //   result = "[" + result + "]";
     }
 
     @Override
@@ -70,7 +69,7 @@ public class OpSerializeJSON extends OpVisitorUnimplemented {
     public void visit(OpQuad opQuad) {
         result += String.format("{ \"name\": \"%s\", \"type\": \"quad\", \"id\": %s }", opQuad.getQuad(), identifiers.getIds(opQuad).get(0));
     }
-    
+
      */
 
     @Override

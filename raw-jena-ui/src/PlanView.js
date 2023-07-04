@@ -4,14 +4,19 @@ export class PlanView {
     // SVG to scale according to the breadth (width) of the tree layout.
 
     constructor(data, viewPoint) {
-        const width = 928;
+
+        const width = viewPoint.getBoundingClientRect().width;
+        const height = viewPoint.getBoundingClientRect().height;
 
         const root = d3.hierarchy(data);
+
+        console.log(root);
+        
         const dx = 10;
         const dy = width / (root.height + 1);
 
         // Create a tree layout.
-        const tree = d3.tree().nodeSize([dx, dy]);
+        const tree = d3.tree().nodeSize([dy, dx]);
 
         // Sort the tree and apply the layout.
         root.sort((a, b) => d3.ascending(a.data.name, b.data.name));
@@ -28,15 +33,17 @@ export class PlanView {
         });
 
         // Compute the adjusted height of the tree.
-        const height = x1 - x0 + dx * 2;
+        // const height = x1 - x0 + dx * 2;
 
         const svg = d3.create("svg")
               .attr("width", width)
               .attr("height", height)
-              .attr("viewBox", [-dy / 3, x0 - dx, width, height])
-              .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+        //.attr("viewBox", [-dy / 3, x0 - dx, width, height])
+              // .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
 
-        const link = svg.append("g")
+        const rootG = svg.append("g");
+
+        const link = rootG.append("g")
               .attr("fill", "none")
               .attr("stroke", "#555")
               .attr("stroke-opacity", 0.4)
@@ -44,17 +51,19 @@ export class PlanView {
               .selectAll()
               .data(root.links())
               .join("path")
-              .attr("d", d3.linkHorizontal()
-                    .x(d => d.y)
-                    .y(d => d.x));
+              .attr("d", d3.linkVertical()
+                    .x(d => d.x)
+                    .y(d => d.y));
         
-        const node = svg.append("g")
+        const node = rootG.append("g")
               .attr("stroke-linejoin", "round")
               .attr("stroke-width", 3)
               .selectAll()
               .data(root.descendants())
               .join("g")
-              .attr("transform", d => `translate(${d.y},${d.x})`);
+              .attr("cx", d => d.x)
+              .attr("cy", d => d.y);
+              //.attr("transform", d => `translate(${d.y},${d.x})`);
 
         node.append("circle")
             .attr("fill", d => d.children ? "#555" : "#999")
@@ -64,9 +73,22 @@ export class PlanView {
             .attr("dy", "0.31em")
             .attr("x", d => d.children ? -6 : 6)
             .attr("text-anchor", d => d.children ? "end" : "start")
-            .text(d => d.data.name)
+            .text(d => "tp") // d.data.name)
             .clone(true).lower()
             .attr("stroke", "white");
+
+        ////////////////////////////
+        // span and zoom allowed
+        
+        function zoomed({ transform }) {
+            rootG.attr("transform", transform);
+            // node.attr("transform", transform);
+            // link.attr("transform", transform);
+        }
+        
+        let zoom = d3.zoom().on("zoom", zoomed);
+        
+        svg.call(zoom);
         
         viewPoint.appendChild(svg.node());
     }

@@ -1,5 +1,6 @@
 import {PAYGQuery} from "./PAYGQuery";
 import {PlanView} from "./PlanView";
+import {CardinalityGraph} from "./CardinalityGraph";
 
 // Plugin that reads results of a SPARQL server.
 // If the answer includes RAW fields, it handles the additional data.
@@ -14,19 +15,35 @@ export class RAWPlugin {
     }
 
     draw() {
+        // #1 update the pay-as-you-go structure
         this.payg.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
         this.payg.updatePlan(this.yasr.results.json.RAWOutput.plan);
         this.payg.addCardinalities(this.yasr.results.json.RAWOutput.cardinalities);
         this.payg.addWalks(this.yasr.results.json.RAWOutput.bindings);
+
+        // #2 create the cardinality & confidence graph
+        const tableGraph = document.createElement("table");
+        tableGraph.setAttribute("class", "tableGraph");
+        const tr = document.createElement("tr");
+
+        tableGraph.appendChild(tr);
+        this.yasr.resultsEl.appendChild(tableGraph);
+
+        const cardinalityContainer = document.createElement("td");
+        cardinalityContainer.setAttribute("class", "raw_graph");
+        new CardinalityGraph(cardinalityContainer);
+        tr.appendChild(cardinalityContainer);
+
+        // #3 create the query plan graph
+        const planContainer = document.createElement("td");
+        planContainer.setAttribute("class", "raw_graph");
+        tr.appendChild(planContainer); // so it gets a width
+        new PlanView(this.payg.plan, planContainer);
+
         
-        const el = document.createElement("div");
-        el.textContent = this.yasr.results.json.SageModule
-        this.yasr.resultsEl.appendChild(el);
-            
         const el2 = document.createElement("div");
         this.yasr.resultsEl.appendChild(el2);
 
-        this.payg.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
         el2.innerHTML = "Estimated number of elements " + Math.round(this.payg.estimateCount());
 
         // (TODO) confidence seems way higher than it should be. Double check formula
@@ -34,13 +51,6 @@ export class RAWPlugin {
         let confidence = this.payg.confidence(0.95, allCardinalities);
         el2.innerHTML += " +- " + Math.round(confidence);
         el2.innerHTML += " over " + this.payg.cardinalities.length + " RWs";
-
-        // el2.innerHTML += "<br/>" + Math.round(this.payg.plan);
-
-        const svg = document.createElement("svg");
-        this.yasr.resultsEl.appendChild(svg);
-        console.log(this.payg.plan);
-        new PlanView(this.payg.plan, svg);
     }
 
     canHandleResults() {

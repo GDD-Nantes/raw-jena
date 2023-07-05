@@ -6,14 +6,18 @@
     <link href="./css/style.css" rel="stylesheet" />
     <script src="./node_modules/@triply/yasgui/build/yasgui.min.js"></script>
     <script src="./node_modules/d3/dist/d3.min.js"></script>
+    <script type="module" src="./node_modules/chart.js/dist/chart.js"></script>
     <script type="module" src="./src/PAYGQuery.js"></script>
     <script type="module" src="./src/RAWPlugin.js"></script>
     <script type="module" src="./src/PlanView.js"></script>
+    <script type="module" src="./src/QueryExamples.js"></script>
+    <script type="module" src="./src/CardinalityGraph.js"></script>    
   </head>
   
   <body>
     <div class="header">
       <span class="logo">R.A.W</span>
+      <button id="header_button" class="header_button" onclick="">Examples</button>
       <span class="github">
         <a href="https://github.com/Chat-Wane/raw-jena">
         <img src="./res/github-mark.svg"
@@ -23,6 +27,9 @@
         </a>
       </span>
     </div>
+
+    <dialog id="examples_dialog" class="examples_dialog">
+    </dialog>
     
     <div id="yasgui"></div>
 
@@ -34,9 +41,23 @@
         <a href="http://www.univ-nantes.fr/">University of Nantes</a>
       </p>
     </footer>
-
     
     <script type="module">
+
+      const button = document.getElementById("header_button");
+      const dialog = document.getElementById("examples_dialog");
+      button.addEventListener("click", () => {
+          dialog.showModal();
+      });
+
+      dialog.addEventListener('click', (event) => {
+          if (event.target.id !== 'examples_dialog_content') {
+              dialog.close();
+          }
+      });
+
+      ///////////////////////////////////////////////////
+      
       /// import {PAYGQuery} from "./PAYGQuery";
       import {RAWPlugin} from "./src/RAWPlugin";
       import {PAYGQuery} from "./src/PAYGQuery";
@@ -57,6 +78,10 @@
       const yasqe = yasgui.getTab().yasqe;
       const yasr  = yasgui.getTab().yasr;
 
+
+      import {QueryExamples} from "./src/QueryExamples";
+      new QueryExamples(dialog, yasqe);
+            
       var paygQuery = new PAYGQuery(yasqe.getValue());
       
       yasqe.on("query", (instance, req) => {
@@ -68,7 +93,7 @@
 
       // (TODO) put an identifier in the query.
       yasqe.on("queryResponse", (instance, resp, duration) => {
-          // (TODO) check if everything HTTP code
+          // (TODO) check if everything ok using HTTP code
           var data = JSON.parse(resp.text);
           var bindings = data.results.bindings;
           paygQuery.addDuration(duration);
@@ -86,8 +111,12 @@
       // monkey-patch the response informations label
       const updateResponseInfo = yasr.updateResponseInfo;
       yasr.updateResponseInfo = function() {
-          yasr.results.bindings = paygQuery.bindings
-          updateResponseInfo.call(yasr)
+          if (!yasr || !yasr.results || !yasr.results.bindings) {
+              updateResponseInfo.call(yasr)
+          } else {
+              yasr.results.bindings = paygQuery.bindings
+              updateResponseInfo.call(yasr)
+          }
           yasr.dataElement.innerText += " (" + paygQuery.nbTimes + " pause/resume)"
       };
       

@@ -1,6 +1,7 @@
 import {PAYGQuery} from "./PAYGQuery";
 import {PlanView} from "./PlanView";
 import {CardinalityGraph} from "./CardinalityGraph";
+// import {Yasr} from "yasgui";
 
 // Plugin that reads results of a SPARQL server.
 // If the answer includes RAW fields, it handles the additional data.
@@ -39,19 +40,17 @@ export class RAWPlugin {
         const planContainer = document.createElement("td");
         planContainer.setAttribute("class", "raw_graph");
         tr.appendChild(planContainer); // so it gets a width
-        new PlanView(this.payg.plan, planContainer);
+        new PlanView(this.payg.getAugmentedPlan(), planContainer);
 
+        // #4 (TODO) print the table of bindings of random walks
+        const resultsContainer = document.createElement("div");
+        const trResults = document.createElement("tr");
+        trResults.appendChild(resultsContainer);
+        tableGraph.appendChild(trResults);
         
-        const el2 = document.createElement("div");
-        this.yasr.resultsEl.appendChild(el2);
-
-        el2.innerHTML = "Estimated number of elements " + Math.round(this.payg.estimateCount());
-
-        // (TODO) confidence seems way higher than it should be. Double check formula
-        var allCardinalities = this.payg.cardinalities;
-        let confidence = this.payg.confidence(0.95, allCardinalities);
-        el2.innerHTML += " +- " + Math.round(confidence);
-        el2.innerHTML += " over " + this.payg.cardinalities.length + " RWs";
+        const yasr = new Yasr(resultsContainer);
+        yasr.setResponse(this.payg.bindings, 12);
+        
     }
 
     canHandleResults() {

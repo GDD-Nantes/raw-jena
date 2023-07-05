@@ -1,6 +1,5 @@
 package fr.gdd.sage.io;
 
-import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 

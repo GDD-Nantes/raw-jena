@@ -1,14 +1,21 @@
 package fr.gdd.sage.io;
 
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.ResultSetFactory;
+import org.apache.jena.riot.resultset.ResultSetLang;
+import org.apache.jena.riot.rowset.RowSetWriter;
+import org.apache.jena.riot.rowset.rw.RowSetWriterJSON;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
+import org.apache.jena.sparql.exec.RowSet;
+import org.apache.jena.sparql.util.Context;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Objects being returned to the client. It contains the most of random walks: individual bindings
@@ -22,8 +29,11 @@ public class RAWOutput implements Serializable {
     Integer nbScans = 0;
 
     List<HashMap<Integer, Long>> cardinalities = new ArrayList<>();
-    List<SerializableBinding> bindings = new ArrayList<>();
+    List<SerializableBinding> serializableBindings = new ArrayList<>();
+    List<Binding> bindings = new ArrayList<>();
     Op plan;
+
+    List<String> vars = new ArrayList<>();
 
     public RAWOutput(Op plan) {
         this.plan = plan;
@@ -53,11 +63,30 @@ public class RAWOutput implements Serializable {
         }
         iterators.clear();
         cardinalities.add(c);
-        bindings.add(new SerializableBinding(b.build()));
+        Binding built = b.build();
+        serializableBindings.add(new SerializableBinding(built));
+        bindings.add(built);
+
+        Iterator<Var> varsOfBinding = built.vars();
+        while (varsOfBinding.hasNext()) {
+            Var v = varsOfBinding.next();
+            if (!this.vars.contains(v.getVarName())) {
+                this.vars.add(v.getVarName());
+            }
+        }
     }
 
-    public List<SerializableBinding> getBindings() {
-        return bindings;
+    // public List<SerializableBinding> getSerializableBindings() {
+  //        return serializableBindings;
+  //  }
+
+    public String getBindings() {
+        ResultSet rs = ResultSetFactory.create(new QueryIteratorFromBindings(bindings), vars);
+        RowSet rowSet = RowSet.adapt(rs);
+        RowSetWriter rswj = RowSetWriterJSON.factory.create(ResultSetLang.RS_JSON);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        rswj.write(baos, rowSet, null);
+        return baos.toString();
     }
 
     public List<HashMap<Integer, Long>> getCardinalities() {

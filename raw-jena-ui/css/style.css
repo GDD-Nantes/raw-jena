@@ -143,3 +143,24 @@ html, body {
 .text-center {
     text-align: center;
 }
+
+svg {
+    font-family: "Iosevka";
+    stroke: var(--frost-4);
+}
+
+.desc_plan {
+    stroke:  var(--frost-4);
+    fill: var(--frost-4);
+}
+
+.type_plan {
+    text-anchor: end;
+    stroke:  var(--aurora-2);
+    fill: var(--aurora-2);
+}
+
+.card_plan {
+    stroke: var(--frost-2);
+    fill: var(--frost-2);
+}

@@ -43,6 +43,25 @@ export class PAYGQuery {
         this.plan = JSON.parse(plan);
     }
 
+    getAugmentedPlan() {
+        var cloned = JSON.parse(JSON.stringify(this.plan));
+        this._getAugmentedPlan(cloned);
+        return cloned;
+    }
+
+    _getAugmentedPlan(node) {
+        if (node.id) {
+            // ceil to avoid 0 elements
+            node.cardinality = Math.ceil(this.node2cardinality[node.id]/this.node2nbWalks[node.id]);
+            node.walks = this.node2nbWalks[node.id];
+        };
+        if (node.children) {
+            node.children.forEach(c => {
+                this._getAugmentedPlan(c);
+            });
+        }
+    }
+
     addWalks(walks) {
         this.walks = this.walks.concat(walks);
     }

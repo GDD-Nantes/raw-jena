@@ -14,6 +14,14 @@ export class PAYGQuery {
         this.plan = "";
         this.cardinalities = [];
         this.walks = []
+
+        this.cardinalityOverWalks = [
+            // {
+            //     x: 0,
+            //     y: 0,
+            //     ci: 0,
+            // }
+        ];
     }
 
     addDuration(duration) {
@@ -41,6 +49,17 @@ export class PAYGQuery {
 
     addCardinalities(cardinalities) {
         this.cardinalities = this.cardinalities.concat(cardinalities);
+    }
+
+    updateEstimateAndCI() {
+        const newX = this.cardinalities.length;
+        const newY = Math.round(this.estimateCount());
+        const newCI = Math.round(this.confidence(0.95, this.cardinalities));
+        this.cardinalityOverWalks.push({
+            x: newX,
+            y: newY,
+            ci: newCI
+        });
     }
 
 

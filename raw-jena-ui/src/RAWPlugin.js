@@ -20,6 +20,7 @@ export class RAWPlugin {
         this.payg.updatePlan(this.yasr.results.json.RAWOutput.plan);
         this.payg.addCardinalities(this.yasr.results.json.RAWOutput.cardinalities);
         this.payg.addWalks(this.yasr.results.json.RAWOutput.bindings);
+        this.payg.updateEstimateAndCI();
 
         // #2 create the cardinality & confidence graph
         const tableGraph = document.createElement("table");
@@ -31,7 +32,7 @@ export class RAWPlugin {
 
         const cardinalityContainer = document.createElement("td");
         cardinalityContainer.setAttribute("class", "raw_graph");
-        new CardinalityGraph(cardinalityContainer);
+        new CardinalityGraph(this.payg.cardinalityOverWalks, cardinalityContainer);
         tr.appendChild(cardinalityContainer);
 
         // #3 create the query plan graph

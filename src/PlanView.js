@@ -16,11 +16,14 @@ export class PlanView {
 
         treeLayout(root);
 
+        
+        
         const svg = d3.create("svg")
               .attr("width", width)
-              .attr("height", height)
+              .attr("height", height);
         
-        const rootG = svg.append("g");
+        const rootG = svg.append("g")
+              .attr("id", "rootG");
 
         const node = rootG.append("g")
               .selectAll()
@@ -63,7 +66,7 @@ export class PlanView {
             .attr("class", "text_plan card_plan")
             .attr("x", d => d.x + 5)
             .attr("dy", "1.2em")
-            .text(d => d.data.cardinality  + " elements sampled over " + d.data.walks + " walks");
+            .text(d => "~" + d.data.cardinality  + " elements sampled over " + d.data.walks + " walks");
         
         ///////////////////////////////////////////////////////////////////
         
@@ -75,5 +78,12 @@ export class PlanView {
         svg.call(zoom);
         
         viewPoint.appendChild(svg.node());
+
+        // Put most of elements in the camera field
+        const width2 = rootG.node().getBBox().width;
+        const height2 = rootG.node().getBBox().height;
+
+        svg.attr("viewBox", (width2/2) + " -20 " + width2 + " " + (height2+20));
+
     }
 }

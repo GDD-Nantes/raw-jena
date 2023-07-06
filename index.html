@@ -57,67 +57,51 @@
       });
 
       ///////////////////////////////////////////////////
-      
-      /// import {PAYGQuery} from "./PAYGQuery";
+
       import {RAWPlugin} from "./src/RAWPlugin";
-      import {PAYGQuery} from "./src/PAYGQuery";
-      // registering of plugins must be done before Yasgui() ofc.
-      Yasr.registerPlugin("RAW", RAWPlugin);
+      Yasr.registerPlugin("RAW", RAWPlugin); // registering of plugins must be done before Yasgui() ofc.
       
       const yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: {
-              endpoint: "http://localhost:8080/watdiv10M",
+              // endpoint: "http://localhost:8080/watdiv10M",
+              endpoint: "http://localhost:3330/WDBench",
               // (TODO) make sure these are recognized by the server
               // (TODO) if they do not exist, should run the query normally
               args: [{name:"limit", value:"100"},
                      {name:"timeout", value:"1000"}],
           },
           copyEndpointOnNewTab: false,
-      })
+      });
 
       const yasqe = yasgui.getTab().yasqe;
       const yasr  = yasgui.getTab().yasr;
 
-
       import {QueryExamples} from "./src/QueryExamples";
       new QueryExamples(dialog, yasqe);
             
-      var paygQuery = new PAYGQuery(yasqe.getValue());
-      
-      yasqe.on("query", (instance, req) => {
-          var newPaygQuery = new PAYGQuery(yasqe.getValue());
-          if (!newPaygQuery.equals(paygQuery)) {
-              paygQuery = newPaygQuery;
-          }
-      });
-
-      // (TODO) put an identifier in the query.
       yasqe.on("queryResponse", (instance, resp, duration) => {
-          // (TODO) check if everything ok using HTTP code
-          var data = JSON.parse(resp.text);
-          var bindings = data.results.bindings;
-          paygQuery.addDuration(duration);
-          paygQuery.addBindings(bindings);
-          console.log(data);
-          // paygQuery.addRAWAggregated(data.RAWOutputAggregated);
-          resp.body.results.bindings = paygQuery.bindings; // ugly
-          // resp.body.RAWOutputAggregated.node2cardinality = paygQuery.node2cardinality; // ugly
-          // resp.body.RAWOutputAggregated.node2nbWalks = paygQuery.node2nbWalks; // ugly
-          paygQuery.updatePlan(data.RAWOutput.plan);
-        
-          yasr.setResponse(resp, paygQuery.totalDuration)
+          if (resp.status === 200) {
+              var data = JSON.parse(resp.text);
+              // update the plugin data structure
+              let raw = yasr.plugins["RAW"];
+              raw.payg.update(duration, data.results.bindings, data.RAWOutput, data.RAWOutputAggregated);
+
+              // update response to include previous results. Ugly but works ok for now.
+              resp.body.results.bindings = raw.payg.bindings;
+              yasr.setResponse(resp, raw.payg.totalDuration);
+          }
       });
 
       // monkey-patch the response informations label
       const updateResponseInfo = yasr.updateResponseInfo;
       yasr.updateResponseInfo = function() {
           if (!yasr || !yasr.results || !yasr.results.bindings) {
-              updateResponseInfo.call(yasr)
+              updateResponseInfo.call(yasr);
           } else {
-              yasr.results.bindings = paygQuery.bindings
-              updateResponseInfo.call(yasr)
+              yasr.results.bindings = yasr.plugins["RAW"].payg.bindings;
+              updateResponseInfo.call(yasr);
           }
-          yasr.dataElement.innerText += " (" + paygQuery.nbTimes + " pause/resume)"
+          yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + " pause/resume)";
       };
       
     </script>

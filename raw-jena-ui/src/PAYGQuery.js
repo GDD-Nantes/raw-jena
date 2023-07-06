@@ -19,6 +19,7 @@ export class PAYGQuery {
         this.plan = {};
         this.cardinalities = [];
         this.walks = []
+        this.vars = []
 
         this.cardinalityOverWalks = [
             // {
@@ -43,13 +44,23 @@ export class PAYGQuery {
         
         this.mergeAggregated(this.node2cardinality, rawAggregated.node2cardinality);
         this.mergeAggregated(this.node2nbWalks, rawAggregated.node2nbWalks);
-        
+
+        console.log(raw);
         let parsedWalks = JSON.parse(raw.bindings);
-        // raw.payg.addWalks(parsedWalks.results.bindings);
+
+        this.mergeVars(parsedWalks.head.vars);
         this.walks = this.walks.concat(parsedWalks.results.bindings);
-        
         this.cardinalities = this.cardinalities.concat(raw.cardinalities);
         this.updateEstimateAndCI();
+        console.log(this.vars);
+    }
+
+    mergeVars(vars) {
+        for (let i in vars) {
+            if (!this.vars.includes(vars[i])) {
+                this.vars.push(vars[i]);
+            }
+        }
     }
 
     getAugmentedPlan() {

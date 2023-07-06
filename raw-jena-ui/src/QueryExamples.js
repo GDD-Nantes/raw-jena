@@ -30,6 +30,7 @@ export class QueryExamples {
         { name: "query_362",
           query: "" },
         { name: "query_604",
+          expect: 25276453, 
           query: `SELECT * WHERE {
     ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .
     ?x2 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .

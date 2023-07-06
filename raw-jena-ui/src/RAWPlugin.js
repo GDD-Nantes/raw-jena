@@ -16,13 +16,6 @@ export class RAWPlugin {
     }
 
     draw() {
-        // #1 update the pay-as-you-go structure
-        this.payg.addRAWAggregated(this.yasr.results.json.RAWOutputAggregated);
-        this.payg.updatePlan(this.yasr.results.json.RAWOutput.plan);
-        this.payg.addCardinalities(this.yasr.results.json.RAWOutput.cardinalities);
-        this.payg.addWalks(this.yasr.results.json.RAWOutput.bindings);
-        this.payg.updateEstimateAndCI();
-
         // #2 create the cardinality & confidence graph
         const tableGraph = document.createElement("table");
         tableGraph.setAttribute("class", "tableGraph");
@@ -43,14 +36,30 @@ export class RAWPlugin {
         new PlanView(this.payg.getAugmentedPlan(), planContainer);
 
         // #4 (TODO) print the table of bindings of random walks
-        const resultsContainer = document.createElement("div");
+        const tdResults = document.createElement("td");
+        tdResults.setAttribute("class", "raw_graph");
+        tdResults.setAttribute("colspan", "2");
         const trResults = document.createElement("tr");
-        trResults.appendChild(resultsContainer);
+        trResults.appendChild(tdResults);
         tableGraph.appendChild(trResults);
-        
-        const yasr = new Yasr(resultsContainer);
-        yasr.setResponse(this.payg.bindings, 12);
-        
+
+        const yasr = new Yasr(tdResults);
+
+        let json = {
+            results: {
+                bindings: this.payg.walks
+            },
+            head: {
+                vars: ["x1", "x2", "x3", "x4"]
+            }
+        };
+
+        var actualYasrResults = tdResults.getElementsByClassName("yasr_results")[0];
+        var yasrDiv = tdResults.getElementsByClassName("yasr")[0];
+        tdResults.removeChild(yasrDiv);
+        tdResults.appendChild(actualYasrResults);        
+
+        yasr.setResponse(json, 42);
     }
 
     canHandleResults() {

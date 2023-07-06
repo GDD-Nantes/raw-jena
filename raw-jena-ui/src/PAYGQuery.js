@@ -3,15 +3,20 @@
 /// the information when possible
 export class PAYGQuery {
 
-    constructor(query) {
-        this.query = query;
+    constructor() {
+        this.reset();
+    }
+
+    // Reset the structure, so it can start with a new pay-as-you-go
+    // query.
+    reset() {
         this.totalDuration = 0;
         this.bindings = [];
         this.nbTimes = 0;
         this.node2cardinality = {};
         this.node2nbWalks = {};
-
-        this.plan = "";
+        
+        this.plan = {};
         this.cardinalities = [];
         this.walks = []
 
@@ -23,24 +28,28 @@ export class PAYGQuery {
             // }
         ];
     }
-
-    addDuration(duration) {
-        // (TODO) check if the query is the proper one.
+    
+    
+    // Merge the newly arrived data with the current one if possible.
+    update(duration, bindings, raw, rawAggregated) {
+        // (TODO) compare two plan instead of hacking with serialization…
+        if (JSON.stringify(this.plan) !== JSON.stringify(JSON.parse(raw.plan))) { // plan is different, must be a different request
+            this.reset();
+        }
+        this.plan = JSON.parse(raw.plan);
         this.totalDuration += duration;
         this.nbTimes += 1;
-    }
-
-    addBindings(binding) {
-        this.bindings = this.bindings.concat(binding);
-    }
-
-    addRAWAggregated(aggregated) {
-        this.mergeAggregated(this.node2cardinality, aggregated.node2cardinality);
-        this.mergeAggregated(this.node2nbWalks, aggregated.node2nbWalks);
-    }
-
-    updatePlan(plan) {
-        this.plan = JSON.parse(plan);
+        this.bindings = this.bindings.concat(bindings);
+        
+        this.mergeAggregated(this.node2cardinality, rawAggregated.node2cardinality);
+        this.mergeAggregated(this.node2nbWalks, rawAggregated.node2nbWalks);
+        
+        let parsedWalks = JSON.parse(raw.bindings);
+        // raw.payg.addWalks(parsedWalks.results.bindings);
+        this.walks = this.walks.concat(parsedWalks.results.bindings);
+        
+        this.cardinalities = this.cardinalities.concat(raw.cardinalities);
+        this.updateEstimateAndCI();
     }
 
     getAugmentedPlan() {
@@ -52,7 +61,7 @@ export class PAYGQuery {
     _getAugmentedPlan(node) {
         if (node.id) {
             // ceil to avoid 0 elements
-            node.cardinality = Math.ceil(this.node2cardinality[node.id]/this.node2nbWalks[node.id]);
+            node.cardinality = (this.node2cardinality[node.id]/this.node2nbWalks[node.id]).toFixed(1);
             node.walks = this.node2nbWalks[node.id];
         };
         if (node.children) {
@@ -60,14 +69,6 @@ export class PAYGQuery {
                 this._getAugmentedPlan(c);
             });
         }
-    }
-
-    addWalks(walks) {
-        this.walks = this.walks.concat(walks);
-    }
-
-    addCardinalities(cardinalities) {
-        this.cardinalities = this.cardinalities.concat(cardinalities);
     }
 
     updateEstimateAndCI() {
@@ -86,8 +87,9 @@ export class PAYGQuery {
     estimateCount() {
         let count = 1;
         for (let k in this.node2cardinality) {
-            count *= this.node2cardinality[k]/this.node2nbWalks[k];
+            count *= (this.node2cardinality[k]/this.node2nbWalks[k]);
         }
+        
         return count;
     }
 

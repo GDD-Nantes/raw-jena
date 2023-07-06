@@ -8,6 +8,10 @@ import org.apache.jena.sparql.serializer.SerializationContext;
 
 import java.util.List;
 
+/**
+ * Convert a list of bindings into a {@link QueryIterator}, that can then be transformed
+ * into a {@link org.apache.jena.sparql.exec.RowSet}, that can then be serialized into JSON.
+ */
 public class QueryIteratorFromBindings implements QueryIterator {
 
     List<Binding> results;
@@ -20,13 +24,10 @@ public class QueryIteratorFromBindings implements QueryIterator {
     @Override
     public Binding nextBinding() {
         ++i;
-        return results.get(i-1);
+        return results.get(i - 1);
     }
 
-    @Override
-    public void cancel() {
 
-    }
 
     @Override
     public boolean hasNext() {
@@ -38,8 +39,9 @@ public class QueryIteratorFromBindings implements QueryIterator {
         return this.nextBinding();
     }
 
+
     @Override
-    public void output(IndentedWriter out) {
+    public void cancel() {
 
     }
 
@@ -47,6 +49,11 @@ public class QueryIteratorFromBindings implements QueryIterator {
     public void close() {
 
     }
+
+    @Override
+    public void output(IndentedWriter out) {
+    }
+
 
     @Override
     public void output(IndentedWriter out, SerializationContext sCxt) {

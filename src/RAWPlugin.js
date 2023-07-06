@@ -1,7 +1,6 @@
 import {PAYGQuery} from "./PAYGQuery";
 import {PlanView} from "./PlanView";
 import {CardinalityGraph} from "./CardinalityGraph";
-// import {Yasr} from "yasgui";
 
 // Plugin that reads results of a SPARQL server.
 // If the answer includes RAW fields, it handles the additional data.
@@ -9,14 +8,14 @@ export class RAWPlugin {
 
     priority = 10;
     hideFromSelection = false;
-    payg = new PAYGQuery("meow");
+    payg = new PAYGQuery();
     
     constructor(yasr) {
         this.yasr = yasr;
     }
 
     draw() {
-        // #2 create the cardinality & confidence graph
+        // #1 create the cardinality & confidence graph
         const tableGraph = document.createElement("table");
         tableGraph.setAttribute("class", "tableGraph");
         const tr = document.createElement("tr");
@@ -29,13 +28,13 @@ export class RAWPlugin {
         new CardinalityGraph(this.payg.cardinalityOverWalks, cardinalityContainer);
         tr.appendChild(cardinalityContainer);
 
-        // #3 create the query plan graph
+        // #2 create the query plan graph
         const planContainer = document.createElement("td");
         planContainer.setAttribute("class", "raw_graph");
         tr.appendChild(planContainer); // so it gets a width
         new PlanView(this.payg.getAugmentedPlan(), planContainer);
 
-        // #4 (TODO) print the table of bindings of random walks
+        // #3 print the table of bindings of random walks
         const tdResults = document.createElement("td");
         tdResults.setAttribute("class", "raw_graph");
         tdResults.setAttribute("colspan", "2");
@@ -43,27 +42,23 @@ export class RAWPlugin {
         trResults.appendChild(tdResults);
         tableGraph.appendChild(trResults);
 
+        // we reuse yasr for its response table
         const yasr = new Yasr(tdResults);
-
-        let json = {
-            results: {
-                bindings: this.payg.walks
-            },
-            head: {
-                vars: ["x1", "x2", "x3", "x4"]
-            }
-        };
-
+        let subResult = { results: { bindings: this.payg.walk },
+                          head: { vars: this.payg.vars }};
+        
+        // replace the whole yasr by only its table part (a bit of a hack again)
         var actualYasrResults = tdResults.getElementsByClassName("yasr_results")[0];
         var yasrDiv = tdResults.getElementsByClassName("yasr")[0];
         tdResults.removeChild(yasrDiv);
         tdResults.appendChild(actualYasrResults);        
 
-        yasr.setResponse(json, 42);
+        yasr.setResponse(subResult, 42);
     }
 
     canHandleResults() {
-        return this.yasr.results && this.yasr.results.json && this.yasr.results.json.RAWOutput;
+        return this.yasr.results && this.yasr.results.json &&
+            (this.yasr.results.json.RAWOutput || this.yasr.results.json.RAWOutputAggregated);
     }
 
     getIcon() {

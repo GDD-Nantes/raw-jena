@@ -21,7 +21,7 @@ public class RAW_QueryDataset extends SPARQL_QueryDataset {
     @Override
     protected void execute(String queryString, HttpAction action) {
         // #1 read the input from incoming HTTP action
-        String inputRetrievedFromRequest = getFromBodyOrHeader(RAWConstants.input.getSymbol(), action);
+        /*String inputRetrievedFromRequest = getFromBodyOrHeader(RAWConstants.input.getSymbol(), action);
 
         // Deserialize from JSON
         RAWInput rawInput = new RAWInput();
@@ -32,15 +32,15 @@ public class RAW_QueryDataset extends SPARQL_QueryDataset {
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
 
         String timeoutFromRequest = getFromBodyOrHeader(RAWConstants.argTimeout, action);
         String limitFromRequest = getFromBodyOrHeader(RAWConstants.argLimit, action);
-        RAWInput rawInput1 = new RAWInput(
+        RAWInput rawInput = new RAWInput(
                 Objects.nonNull(timeoutFromRequest) ? Long.parseLong(timeoutFromRequest) : null,
                 Objects.nonNull(limitFromRequest) ? Long.parseLong(limitFromRequest) : null);
 
-        action.getContext().set(RAWConstants.input, rawInput1);
+        action.getContext().set(RAWConstants.input, rawInput);
 
         super.execute(queryString, action);
     }

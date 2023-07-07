@@ -4,6 +4,11 @@ export class PlanView {
     // SVG to scale according to the breadth (width) of the tree layout.
 
     constructor(data, viewPoint) {
+        if (!data || Object.keys(data).length === 0) {
+            return;
+        }
+
+        
         // (TODO) viewPoint's bounding box does not work well
         // find out another way
         const width = viewPoint.getBoundingClientRect().width;

@@ -4,13 +4,6 @@
 export class QueryExamples {
 
     queries = [
-        { name: "query_35",
-          query: `SELECT * WHERE {
-  ?x1 <http://www.wikidata.org/prop/direct/P106> <http://www.wikidata.org/entity/Q12299841> .
-  ?x2 <http://www.wikidata.org/prop/direct/P17> ?x3 .
-  ?x1 <http://www.wikidata.org/prop/direct/P19> ?x2 .
-  ?x4 <http://www.wikidata.org/prop/direct/P569> ?x4 .
-}` },
         { name: "query_139",
           query: "" },
         { name: "query_171",

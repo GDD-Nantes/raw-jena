@@ -11,7 +11,6 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 import org.apache.jena.sparql.exec.RowSet;
-import org.apache.jena.sparql.util.Context;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;

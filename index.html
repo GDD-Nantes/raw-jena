@@ -60,6 +60,7 @@
 
       import {RAWPlugin} from "./src/RAWPlugin";
       Yasr.registerPlugin("RAW", RAWPlugin); // registering of plugins must be done before Yasgui() ofc.
+      Yasr.defaults.persistencyExpire = 0;
       
       const yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: {
@@ -67,18 +68,20 @@
               endpoint: "http://localhost:3330/WDBench",
               // (TODO) make sure these are recognized by the server
               // (TODO) if they do not exist, should run the query normally
-              args: [{name:"limit", value:"100"},
-                     {name:"timeout", value:"1000"}],
+              args: [{name:"limit", value:"100000"},
+                     {name:"timeout", value:"60000"}],
           },
-          copyEndpointOnNewTab: false,
+          copyEndpointOnNewTab: false
       });
 
       const yasqe = yasgui.getTab().yasqe;
       const yasr  = yasgui.getTab().yasr;
 
+      console.log(yasr);
+      
       import {QueryExamples} from "./src/QueryExamples";
       new QueryExamples(dialog, yasqe);
-            
+      
       yasqe.on("queryResponse", (instance, resp, duration) => {
           if (resp.status === 200) {
               var data = JSON.parse(resp.text);

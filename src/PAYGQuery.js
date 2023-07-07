@@ -38,6 +38,8 @@ export class PAYGQuery {
             this.reset();
         }
         this.plan = JSON.parse(raw.plan);
+        this.ids = this.getIds(this.plan);
+        
         this.totalDuration += duration;
         this.nbTimes += 1;
         this.bindings = this.bindings.concat(bindings);
@@ -53,6 +55,14 @@ export class PAYGQuery {
         this.updateEstimateAndCI();
     }
 
+    /// (TODO) more generic function to know when RW are successful or not
+    getIds(node) {
+        if (node.children) {
+            return [node.id].concat(this.getIds(node.children[0]));
+        }
+        return [node.id];
+    }
+
     mergeVars(vars) {
         for (let i in vars) {
             if (!this.vars.includes(vars[i])) {
@@ -63,26 +73,27 @@ export class PAYGQuery {
 
     getAugmentedPlan() {
         var cloned = JSON.parse(JSON.stringify(this.plan));
-        this._getAugmentedPlan(cloned);
+        this._getAugmentedPlan(cloned, []);
         return cloned;
     }
 
-    _getAugmentedPlan(node) {
+    _getAugmentedPlan(node, ids) {
         if (node.id) {
-            // ceil to avoid 0 elements
-            node.cardinality = (this.node2cardinality[node.id]/this.node2nbWalks[node.id]).toFixed(1);
+            ids.push(node.id);
+            // node.cardinality = (this.node2cardinality[node.id]/this.node2nbWalks[node.id]).toFixed(1);
+            node.cardinality = this.countEstimateAvg(ids);
             node.walks = this.node2nbWalks[node.id];
         };
         if (node.children) {
             node.children.forEach(c => {
-                this._getAugmentedPlan(c);
+                this._getAugmentedPlan(c, ids);
             });
         }
     }
 
     updateEstimateAndCI() {
         const newX = this.cardinalities.length;
-        const newY = Math.round(this.estimateCount());
+        const newY = Math.round(this.countEstimateAvg(this.ids));
         const newCI = Math.round(this.confidence(0.95, this.cardinalities));
         this.cardinalityOverWalks.push({
             x: newX,
@@ -91,31 +102,35 @@ export class PAYGQuery {
         });
     }
 
+
+    
 
 
-    estimateCount() {
-        let count = 1;
-        for (let k in this.node2cardinality) {
-            count *= (this.node2cardinality[k]/this.node2nbWalks[k]);
+    countEstimateAvg(ids) {
+        let sum = 0;
+        for (let i in this.cardinalities) {
+            sum += this.countEstimateOf(this.cardinalities[i], ids)/this.cardinalities.length;
         }
-        
-        return count;
+        return sum;
     }
-
-    estimateCountOf(cardinalities) {
-        let count = 1;
-        for (let k in cardinalities) {
-            count *= cardinalities[k];
+    
+    countEstimateOf(cardinalities, ids) {
+        if (ids.every(id => Object.keys(cardinalities).includes(String(id)))) {            
+            let cardinality = 1;
+            ids.forEach(id => {
+                cardinality *= cardinalities[String(id)];
+            });
+            return cardinality;
         }
         
-        return count;
+        return 0;
     }
 
     variance(allCardinalities) {
-        const globalAverage = this.estimateCount();
+        const globalAverage = this.countEstimateAvg(this.ids);
         let sumOfPowered = 0;
         for (let i = 0; i < allCardinalities.length; ++i) {
-            let count = this.estimateCountOf(allCardinalities[i]);
+            let count = this.countEstimateOf(allCardinalities[i], this.ids);
             let powered = Math.pow(count - globalAverage, 2);
             let overN = powered/allCardinalities.length;
             sumOfPowered += overN;

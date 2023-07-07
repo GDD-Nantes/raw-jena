@@ -66,7 +66,8 @@ export class PlanView {
             .attr("class", "text_plan card_plan")
             .attr("x", d => d.x + 5)
             .attr("dy", "1.2em")
-            .text(d => "~" + d.data.cardinality  + " elements sampled over " + d.data.walks + " walks");
+            .text(d => "~ " + Number(d.data.cardinality).toLocaleString()  + " elements sampled over " +
+                  Number(d.data.walks).toLocaleString() + " walks");
         
         ///////////////////////////////////////////////////////////////////
         

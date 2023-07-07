@@ -45,14 +45,12 @@ export class PAYGQuery {
         this.mergeAggregated(this.node2cardinality, rawAggregated.node2cardinality);
         this.mergeAggregated(this.node2nbWalks, rawAggregated.node2nbWalks);
 
-        console.log(raw);
         let parsedWalks = JSON.parse(raw.bindings);
 
         this.mergeVars(parsedWalks.head.vars);
         this.walks = this.walks.concat(parsedWalks.results.bindings);
         this.cardinalities = this.cardinalities.concat(raw.cardinalities);
         this.updateEstimateAndCI();
-        console.log(this.vars);
     }
 
     mergeVars(vars) {

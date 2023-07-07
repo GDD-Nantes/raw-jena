@@ -44,7 +44,7 @@ export class RAWPlugin {
 
         // we reuse yasr for its response table
         const yasr = new Yasr(tdResults);
-        let subResult = { results: { bindings: this.payg.walk },
+        let subResult = { results: { bindings: this.payg.walks },
                           head: { vars: this.payg.vars }};
         
         // replace the whole yasr by only its table part (a bit of a hack again)

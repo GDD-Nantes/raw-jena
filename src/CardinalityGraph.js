@@ -41,7 +41,7 @@ export class CardinalityGraph {
                 plugins: {
                     title: {
                         display: true,
-                        text: "Estimated " + data[data.length-1].y + " ± "+data[data.length-1].ci + " elements",
+                        text: "Estimated " + data[data.length-1].y.toLocaleString() + " ± "+ data[data.length-1].ci.toLocaleString() + " elements",
                     },
                     legend: {
                         display: false
@@ -66,5 +66,6 @@ export class CardinalityGraph {
             }
         });
     }
+    
 }
 

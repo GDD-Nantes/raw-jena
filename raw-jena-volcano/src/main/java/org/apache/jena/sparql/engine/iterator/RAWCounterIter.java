@@ -24,8 +24,15 @@ import java.util.Objects;
  **/
 public class RAWCounterIter extends QueryIterRepeatApply {
 
+    /**
+     * The number of random walks from the root until it fails or succeed.
+     */
+    Integer nbWalks = 0;
+
+    /**
+     * The number of valid results, ie., random walks that succeed.
+     */
     Integer nbResults = 0;
-    Integer nbScans = 0; // (TODO) put a limit on that too, number of scans maximal reached
 
     RAWInput input;
     RAWOutput output;
@@ -58,18 +65,19 @@ public class RAWCounterIter extends QueryIterRepeatApply {
      */
     private boolean stoppingCondition() {
         input = Objects.isNull(input) ? getExecContext().getContext().get(RAWConstants.input) : input;
-        return input.limitReached(nbResults) || input.deadlineReached();
+        return input.limitReached(nbWalks) || input.deadlineReached();
     }
 
     @Override
     protected boolean hasNextBinding() {
 
-        while (!current.hasNext() && !stoppingCondition()) {
+        while (!stoppingCondition() && !current.hasNext()) {
             getExecContext().getContext().set(SageConstants.cursor, 0);
             HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
             outputAggregated.addResult(iterators);
             output.addResultThenClear(iterators);
             nextStage(initialBinding);
+            nbWalks += 1;
         }
 
         if (stoppingCondition()) {

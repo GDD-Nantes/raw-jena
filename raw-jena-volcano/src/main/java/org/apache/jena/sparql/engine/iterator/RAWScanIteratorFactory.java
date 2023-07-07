@@ -9,6 +9,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.util.iterator.NullIterator;
+import org.apache.jena.util.iterator.SingletonIterator;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -46,7 +47,9 @@ public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implement
 
         Iterator<Tuple<NodeId>> wrapped = Objects.isNull(builder.ptir) ?
                 new NullIterator<>():
-                new RAWJenaIterator(builder.ptir, builder.min, builder.max);
+                Objects.nonNull(builder.pattern) ?
+                        new SingletonIterator<>(builder.pattern):
+                        new RAWJenaIterator(builder.ptir, builder.min, builder.max);
         return new RAWJenaIteratorWrapper(wrapped, id, vars, nodeTupleTable, context);
     }
 }

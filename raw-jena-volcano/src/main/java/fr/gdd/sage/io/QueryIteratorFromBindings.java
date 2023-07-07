@@ -27,8 +27,6 @@ public class QueryIteratorFromBindings implements QueryIterator {
         return results.get(i - 1);
     }
 
-
-
     @Override
     public boolean hasNext() {
         return i < results.size();

@@ -14,6 +14,9 @@ public class RAWConstants {
     public static Symbol timeout = allocConstantSymbol("Timeout");
     public static Symbol limit   = allocConstantSymbol("Limit");
 
+    public static String argTimeout = "timeout";
+    public static String argLimit   = "limit";
+
     public static Symbol output = allocVariableSymbol("Output");
     public static Symbol outputAggregated = allocVariableSymbol("OutputAggregated");
     public static Symbol input = allocVariableSymbol("Input");

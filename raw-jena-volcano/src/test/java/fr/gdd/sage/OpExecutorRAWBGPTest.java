@@ -91,6 +91,24 @@ class OpExecutorRAWBGPTest {
     }
 
     @Test
+    public void get_a_random_singleton() {
+        Op op = SSE.parseOp("(bgp (?p <http://own> <http://dog>))");
+        Set<Binding> allBindings = generateResults(op, dataset);
+
+        Context c = dataset.getContext().copy().set(SageConstants.limit, 1);
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+
+        QueryIterator iterator = plan.iterator();
+        long sum = 0;
+        while (iterator.hasNext()) {
+            assertTrue(allBindings.contains(iterator.next()));
+            sum += 1;
+        }
+        assertEquals(1, sum);
+    }
+
+    @Test
     public void get_1000_randoms_from_a_triple_pattern() {
         Op op = SSE.parseOp("(bgp (?s <http://address> ?o))");
         Set<Binding> allBindings = generateResults(op, dataset);

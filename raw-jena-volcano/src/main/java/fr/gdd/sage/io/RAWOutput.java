@@ -29,7 +29,6 @@ public class RAWOutput implements Serializable {
     Integer nbScans = 0;
 
     List<HashMap<Integer, Long>> cardinalities = new ArrayList<>();
-    List<SerializableBinding> serializableBindings = new ArrayList<>();
     List<Binding> bindings = new ArrayList<>();
     Op plan;
 
@@ -64,7 +63,6 @@ public class RAWOutput implements Serializable {
         iterators.clear();
         cardinalities.add(c);
         Binding built = b.build();
-        serializableBindings.add(new SerializableBinding(built));
         bindings.add(built);
 
         Iterator<Var> varsOfBinding = built.vars();
@@ -75,10 +73,6 @@ public class RAWOutput implements Serializable {
             }
         }
     }
-
-    // public List<SerializableBinding> getSerializableBindings() {
-  //        return serializableBindings;
-  //  }
 
     public String getBindings() {
         ResultSet rs = ResultSetFactory.create(new QueryIteratorFromBindings(bindings), vars);

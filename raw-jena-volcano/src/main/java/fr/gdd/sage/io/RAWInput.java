@@ -5,6 +5,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.util.Context;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Input objects that constitutes the configuration of a random walks query.
@@ -25,11 +26,13 @@ public class RAWInput implements Serializable {
         this.setTimeout(Math.min(this.timeout,  ((RAWInput)context.get(RAWConstants.input)).timeout));
     }
 
-    public RAWInput(long timeout, long limit) {
-        this.timeout = timeout;
-        this.limit = limit;
-        deadline = System.currentTimeMillis() + this.timeout;
-        deadline = deadline > 0 ? deadline : Long.MAX_VALUE; // overflowed
+    public RAWInput(Long timeout, Long limit) {
+        if (Objects.nonNull(limit)) {
+            setLimit(limit);
+        }
+        if (Objects.nonNull(timeout)) {
+            setTimeout(timeout);
+        }
     }
 
     public void setTimeout(long timeout) {

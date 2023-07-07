@@ -13,6 +13,7 @@ import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.util.iterator.NullIterator;
+import org.apache.jena.util.iterator.SingletonIterator;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +30,8 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
     RAWInput input;
     RAWOutput output;
     ExecutionContext context;
+
+    Tuple<NodeId> currentValue;
 
     NodeTupleTable ntt;
     Var[] vars;
@@ -50,7 +53,7 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
 
     @Override
     public boolean hasNext() {
-        if (input.deadlineReached() || input.limitReached(output.getNbScans())) {
+        if (input.deadlineReached()) { //|| input.limitReached(output.getNbScans())) {
             throw new PauseException();
         }
         return wrapped.hasNext();
@@ -60,7 +63,8 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
     public Tuple<NodeId> next() {
         output.addScan();
         this.context.getContext().set(SageConstants.cursor, this.id);
-        return wrapped.next();
+        currentValue = wrapped.next();
+        return currentValue;
     }
 
     public Iterator<Tuple<NodeId>> getWrapped() {
@@ -69,19 +73,13 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
 
     public Binding getCurrent() {
         BindingBuilder result = Binding.builder();
-        if (wrapped instanceof NullIterator) {
+        if (wrapped instanceof NullIterator || Objects.isNull(currentValue)) {
             return result.build(); // nothing
-        }
-
-        Tuple<NodeId> nodeIds = ((RAWJenaIterator) wrapped).getCurrent();
-
-        if (Objects.isNull(nodeIds)) {
-            return result.build();
         }
 
         for (int i = 0; i < vars.length; ++i) {
             if (Objects.nonNull(vars[i])) {
-                result.add(vars[i], ntt.getNodeTable().getNodeForNodeId(nodeIds.get(i)));
+                result.add(vars[i], ntt.getNodeTable().getNodeForNodeId(currentValue.get(i)));
             }
         }
         return result.build();
@@ -90,8 +88,11 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
     public long getCardinality() {
         if (wrapped instanceof NullIterator) {
             return 0L;
+        } else if (wrapped instanceof SingletonIterator) {
+            return 1L;
         } else {
             return ((RAWJenaIterator) wrapped).cardinality();
         }
     }
+
 }

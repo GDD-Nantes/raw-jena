@@ -20,13 +20,41 @@ export class QueryExamples {
         { name: "query_209",
           query: "" },
         { name: "query_347",
-          query: "" },
+          expect: 1,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .
+  ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q515> .
+  ?x2 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q6256> .
+  ?x3 <http://www.wikidata.org/prop/direct/P39> <http://www.wikidata.org/entity/Q30185> .
+  ?x3 <http://www.wikidata.org/prop/direct/P6> ?x1 .
+}` },
         { name: "query_357",
-          query: "" },
+          expect: 1327,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .
+  ?x2 <http://www.wikidata.org/prop/direct/P30> ?x3 .
+  ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .
+}` },
         { name: "query_358",
-          query: "" },
+          expect: 109,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .
+  ?x3 <http://www.wikidata.org/prop/direct/P17> ?x2 .
+  ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q1194951> .
+  ?x3 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q2485448> .
+  ?x1 <http://www.wikidata.org/prop/direct/P641> <http://www.wikidata.org/entity/Q847> .
+  ?x3 <http://www.wikidata.org/prop/direct/P641> <http://www.wikidata.org/entity/Q847> .
+}` },
         { name: "query_360",
-          query: "" },
+          expect: 10,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .
+  ?x3 <http://www.wikidata.org/prop/direct/P21> <http://www.wikidata.org/entity/Q6581072> .
+  ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q515> .
+  ?x2 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q6256> .
+  ?x3 <http://www.wikidata.org/prop/direct/P39> <http://www.wikidata.org/entity/Q30185> .
+  ?x1 <http://www.wikidata.org/prop/direct/P6> ?x3 .
+}` },
         { name: "query_362",
           query: "" },
         { name: "query_604",
@@ -41,16 +69,36 @@ export class QueryExamples {
 }`
         },
         { name: "query_605",
-          query: "" },
-        { name: "query_630",
-          query: "" },
+          expect: 4802920630,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .
+  ?x2 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .
+  ?x1 <http://www.wikidata.org/prop/direct/P69> ?x3 .
+  ?x2 <http://www.wikidata.org/prop/direct/P69> ?x3 .
+}` },
+        { name: "query_633",
+          expect: 34916061,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P31> ?x2 .
+  ?x1 <http://www.wikidata.org/prop/direct/P698> ?x3 .
+}` },
         { name: "query_631",
           query: "" },
-        { name: "query_633",
+        { name: "query_630",
           query: "" },
         { name: "query_679",
-          query: ""}
-    ];
+          expect: 259,
+          query: `SELECT * WHERE {
+  ?x1 ?x2 <http://www.wikidata.org/entity/Q5> .
+  ?x1 <http://www.wikidata.org/prop/direct/P1433> ?x3 .
+}`},
+        { name: "query_256",
+          expect: 29977745,
+          query: `SELECT * WHERE {
+  ?x1 <http://www.wikidata.org/prop/direct/P1433> ?x2 .
+  ?x1 <http://www.wikidata.org/prop/direct/P433> ?x3 .
+  ?x1 <http://www.wikidata.org/prop/direct/P478> ?x4 .
+}`}   ];
 
     constructor(dialog, yasqe) {
         const container = document.createElement("span");

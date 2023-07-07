@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.io.RAWInput;
+import org.apache.jena.base.Sys;
 import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
 
@@ -33,7 +34,13 @@ public class RAW_QueryDataset extends SPARQL_QueryDataset {
             }
         }
 
-        action.getContext().set(RAWConstants.input, rawInput);
+        String timeoutFromRequest = getFromBodyOrHeader(RAWConstants.argTimeout, action);
+        String limitFromRequest = getFromBodyOrHeader(RAWConstants.argLimit, action);
+        RAWInput rawInput1 = new RAWInput(
+                Objects.nonNull(timeoutFromRequest) ? Long.parseLong(timeoutFromRequest) : null,
+                Objects.nonNull(limitFromRequest) ? Long.parseLong(limitFromRequest) : null);
+
+        action.getContext().set(RAWConstants.input, rawInput1);
 
         super.execute(queryString, action);
     }

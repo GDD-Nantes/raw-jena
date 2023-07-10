@@ -1,5 +1,7 @@
 package fr.gdd.sage.io;
 
+import fr.gdd.sage.RAWConstants;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.riot.resultset.ResultSetLang;
@@ -55,10 +57,20 @@ public class RAWOutput implements Serializable {
     public void addResultThenClear(HashMap<Integer, RAWJenaIteratorWrapper> iterators) {
         BindingBuilder b = BindingBuilder.create();
         HashMap<Integer, Long> c = new HashMap<>();
+        double probability = 1.;
+        b.add(Var.alloc(RAWConstants.outputProbability.getSymbol()), NodeFactory.createLiteral("0"));
         for (Map.Entry<Integer, RAWJenaIteratorWrapper> kv : iterators.entrySet()) {
             b.addAll(kv.getValue().getCurrent());
             c.put(kv.getKey(), kv.getValue().getCardinality());
+            if (kv.getValue().getCardinality() > 0) {
+                // even if it fails, it had a sampled probability
+                probability *= 1. / (double) kv.getValue().getCardinality();
+            }
         }
+
+        b.set(Var.alloc(RAWConstants.outputProbability.getSymbol()), NodeFactory.createLiteral(String.valueOf(probability)));
+
+
         iterators.clear();
         cardinalities.add(c);
         Binding built = b.build();

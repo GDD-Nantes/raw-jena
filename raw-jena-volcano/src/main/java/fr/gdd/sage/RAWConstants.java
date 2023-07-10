@@ -17,6 +17,7 @@ public class RAWConstants {
     public static String argTimeout = "timeout";
     public static String argLimit   = "limit";
 
+    public static Symbol outputProbability = allocVariableSymbol("_probability");
     public static Symbol output = allocVariableSymbol("Output");
     public static Symbol outputAggregated = allocVariableSymbol("OutputAggregated");
     public static Symbol input = allocVariableSymbol("Input");

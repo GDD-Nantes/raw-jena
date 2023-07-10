@@ -111,7 +111,7 @@ export class QueryExamples {
             button.addEventListener("click", () => {
                 yasqe.setValue(q.query);
             });
-            button.setAttribute("title", q.query);
+            button.setAttribute("title", q.query + "\n\nNumber of elements: "+ q.expect.toLocaleString());
             
             td.appendChild(button);
             tr.appendChild(td);

@@ -2,6 +2,7 @@ package fr.gdd.sage;
 
 import fr.gdd.sage.databases.persistent.Watdiv10M;
 import fr.gdd.sage.fuseki.RAWModule;
+import org.apache.jena.dboe.trans.bplustree.ProgressJenaIterator;
 import org.apache.jena.fuseki.auth.Auth;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.sys.FusekiModules;
@@ -112,6 +113,8 @@ public class RAWFusekiServer {
      */
     static FusekiServer buildServer(String datasetPath, Dataset dataset, Integer port, String ui) {
         FusekiModules.add(new RAWModule());
+
+        ProgressJenaIterator.NB_WALKS = 42; // (TODO) let it be configurable
 
         FusekiServer.Builder serverBuilder = FusekiServer.create()
                 // .parseConfigFile("configurations/sage.ttl")

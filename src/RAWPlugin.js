@@ -1,6 +1,6 @@
-import {PAYGQuery} from "./PAYGQuery";
-import {PlanView} from "./PlanView";
-import {CardinalityGraph} from "./CardinalityGraph";
+import {PAYGQuery} from "./PAYGQuery.js";
+import {PlanView} from "./PlanView.js";
+import {CardinalityGraph} from "./CardinalityGraph.js";
 
 // Plugin that reads results of a SPARQL server.
 // If the answer includes RAW fields, it handles the additional data.

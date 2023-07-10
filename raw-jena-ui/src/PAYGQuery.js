@@ -99,7 +99,7 @@ export class PAYGQuery {
     updateEstimateAndCI() {
         const newX = this.cardinalities.length;
         const newY = Math.round(this.countEstimateAvg(this.ids));
-        const newCI = Math.round(this.confidence(0.95, this.cardinalities));
+        const newCI = Math.round(this.confidence(0.99, this.cardinalities));
         this.cardinalityOverWalks.push({
             x: newX,
             y: newY,

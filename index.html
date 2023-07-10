@@ -68,7 +68,7 @@
               endpoint: "http://localhost:3330/WDBench",
               // (TODO) make sure these are recognized by the server
               // (TODO) if they do not exist, should run the query normally
-              args: [{name:"limit", value:"100000"},
+              args: [{name:"limit", value:"10000"},
                      {name:"timeout", value:"60000"}],
           },
           copyEndpointOnNewTab: false
@@ -77,8 +77,6 @@
       const yasqe = yasgui.getTab().yasqe;
       const yasr  = yasgui.getTab().yasr;
 
-      console.log(yasr);
-      
       import {QueryExamples} from "./src/QueryExamples";
       new QueryExamples(dialog, yasqe);
       

@@ -21,6 +21,8 @@ export class PAYGQuery {
         this.walks = []
         this.vars = []
 
+        this.lazyCountEstimate = null;
+
         this.cardinalityOverWalks = [
             // {
             //     x: 0,
@@ -52,6 +54,9 @@ export class PAYGQuery {
         this.mergeVars(parsedWalks.head.vars);
         this.walks = this.walks.concat(parsedWalks.results.bindings);
         this.cardinalities = this.cardinalities.concat(raw.cardinalities);
+
+        this.lazyCountEstimate = null;
+            
         this.updateEstimateAndCI();
     }
 
@@ -107,10 +112,20 @@ export class PAYGQuery {
 
 
     countEstimateAvg(ids) {
+        if (ids === this.ids && this.lazyCountEstimate) {
+            return this.lazyCountEstimate;
+        }
+
+        
         let sum = 0;
         for (let i in this.cardinalities) {
             sum += this.countEstimateOf(this.cardinalities[i], ids)/this.cardinalities.length;
         }
+
+        if (ids === this.ids) {
+            this.lazyCountEstimate = sum;
+        }
+        
         return sum;
     }
     
@@ -136,11 +151,11 @@ export class PAYGQuery {
             sumOfPowered += overN;
         }
         
-        return Math.sqrt(sumOfPowered)/Math.sqrt(allCardinalities.length);
+        return sumOfPowered;
     }
 
     confidence(rate, allCardinalities) {
-        return rate*this.variance(allCardinalities)/Math.sqrt(allCardinalities.length);
+        return rate*Math.sqrt(this.variance(allCardinalities))/Math.sqrt(allCardinalities.length);
     }
 
 

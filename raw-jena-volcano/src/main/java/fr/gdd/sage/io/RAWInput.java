@@ -21,9 +21,11 @@ public class RAWInput implements Serializable {
     public RAWInput(Context context) {
         // server first, then client input
         this.limit = context.isDefined(RAWConstants.limit) ? context.get(RAWConstants.limit) : limit;
-        this.limit = Math.min(this.limit, ((RAWInput)context.get(RAWConstants.input)).limit);
         this.setTimeout(context.isDefined(RAWConstants.timeout) ? context.get(RAWConstants.timeout) : timeout);
-        this.setTimeout(Math.min(this.timeout,  ((RAWInput)context.get(RAWConstants.input)).timeout));
+        if (context.isDefined(RAWConstants.input)) {
+            this.limit = Math.min(this.limit, ((RAWInput) context.get(RAWConstants.input)).limit);
+            this.setTimeout(Math.min(this.timeout,  ((RAWInput)context.get(RAWConstants.input)).timeout));
+        }
     }
 
     public RAWInput(Long timeout, Long limit) {

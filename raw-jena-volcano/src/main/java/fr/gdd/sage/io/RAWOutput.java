@@ -61,10 +61,10 @@ public class RAWOutput implements Serializable {
         b.add(Var.alloc(RAWConstants.outputProbability.getSymbol()), NodeFactory.createLiteral("0"));
         for (Map.Entry<Integer, RAWJenaIteratorWrapper> kv : iterators.entrySet()) {
             b.addAll(kv.getValue().getCurrent());
-            c.put(kv.getKey(), kv.getValue().getCardinality());
-            if (kv.getValue().getCardinality() > 0) {
+            c.put(kv.getKey(), kv.getValue().cardinality());
+            if (kv.getValue().cardinality() > 0) {
                 // even if it fails, it had a sampled probability
-                probability *= 1. / (double) kv.getValue().getCardinality();
+                probability *= 1. / (double) kv.getValue().cardinality();
             }
         }
 
@@ -99,6 +99,7 @@ public class RAWOutput implements Serializable {
     }
 
     public String getPlan() {
+        // (TODO) visitor that serializes the plan
         return (new OpSerializeJSON(this.plan)).result;
     }
 }

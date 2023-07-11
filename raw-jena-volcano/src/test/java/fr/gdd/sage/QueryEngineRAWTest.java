@@ -1,6 +1,7 @@
 package fr.gdd.sage;
 
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
+import fr.gdd.sage.io.RAWInput;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.QueryEngineFactory;
@@ -39,6 +40,11 @@ class QueryEngineRAWTest {
                 ")");
 
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
+        assertFalse(factory instanceof QueryEngineRAW.QueryEngineRandomFactory);
+
+        // as soon as the dataset is declared with RAW threshold, the engine becomes a candidate.
+        dataset.getContext().set(RAWConstants.timeout, 60000L);
+        factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
         assertTrue(factory instanceof QueryEngineRAW.QueryEngineRandomFactory);
     }
 

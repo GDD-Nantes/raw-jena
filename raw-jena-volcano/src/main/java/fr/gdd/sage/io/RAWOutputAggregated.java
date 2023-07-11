@@ -1,10 +1,6 @@
 package fr.gdd.sage.io;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonRootName;
-import fr.gdd.sage.arq.IdentifierAllocator;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
-import org.apache.jena.tdb.store.Hash;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -26,7 +22,7 @@ public class RAWOutputAggregated implements Serializable {
             if (!node2cardinality.containsKey(kv.getKey())) {
                 node2cardinality.put(kv.getKey(), 0L);
             }
-            node2cardinality.put(kv.getKey(), node2cardinality.get(kv.getKey()) + kv.getValue().getCardinality());
+            node2cardinality.put(kv.getKey(), node2cardinality.get(kv.getKey()) + kv.getValue().cardinality());
 
             if (!node2nbWalks.containsKey(kv.getKey())) {
                 node2nbWalks.put(kv.getKey(), 0L);

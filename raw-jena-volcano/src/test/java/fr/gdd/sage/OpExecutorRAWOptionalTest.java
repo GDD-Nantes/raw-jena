@@ -48,7 +48,7 @@ class OpExecutorRAWOptionalTest {
         Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(SageConstants.limit, 1);
+        Context c = dataset.getContext().copy().set(RAWConstants.limit, 1L);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 

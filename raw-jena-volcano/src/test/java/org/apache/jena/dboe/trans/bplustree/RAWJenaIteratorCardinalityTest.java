@@ -1,6 +1,8 @@
 package org.apache.jena.dboe.trans.bplustree;
 
-import fr.gdd.sage.*;
+import fr.gdd.sage.OpExecutorRAW;
+import fr.gdd.sage.QueryEngineRAW;
+import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import fr.gdd.sage.databases.inmemory.SmallBlocksInMemoryTDB2ForCardinality;
 import fr.gdd.sage.databases.persistent.Watdiv10M;
@@ -12,6 +14,7 @@ import org.apache.jena.query.ReadWrite;
 import org.apache.jena.sparql.algebra.op.OpBGP;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 import org.apache.jena.sparql.engine.iterator.RAWScanIteratorFactory;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.tdb2.TDB2Factory;
@@ -29,6 +32,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +42,6 @@ class RAWJenaIteratorCardinalityTest {
     Logger log = LoggerFactory.getLogger(RAWJenaIteratorCardinalityTest.class);
 
     static Dataset dataset;
-
     static Dataset smallerDataset;
 
     @BeforeAll
@@ -54,28 +57,41 @@ class RAWJenaIteratorCardinalityTest {
         TDBInternal.expel(dataset.asDatasetGraph());
     }
 
+    @Test
+    public void cardinality_of_fully_bounded_existing_triple() {
+        OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> <http://own> <http://cat>))");
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, dataset);
+        assertEquals(1, it.cardinality());
+    }
+
     @Disabled
     @Test
-    public void cardinality_of_nothing() {
-        // (TODO)
-        OpBGP op = (OpBGP) SSE.parseOp("(bgp (?s ?p <http://licorne>))");
-        RAWJenaIterator it = getRandomJenaIterator(op, dataset);
+    public void cardinality_of_fully_bounded_missing_triple() {
+        OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> <http://own> <http://licorne>))");
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, dataset);
+        assertEquals(0, it.cardinality());
+    }
 
+
+    @Disabled
+    @Test
+    public void cardinality_of_nothing_but_not_fully_bounded_triple() {
+        OpBGP op = (OpBGP) SSE.parseOp("(bgp (?s ?p <http://licorne>))");
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, dataset);
         assertEquals(0, it.cardinality());
     }
 
     @Test
     public void cardinality_of_a_one_tuple_triple_pattern() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (?s ?p <http://cat>))");
-        RAWJenaIterator it = getRandomJenaIterator(op, dataset);
-
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, dataset);
         assertEquals(1, it.cardinality());
     }
 
     @Test
     public void cardinality_of_a_few_tuples_triple_pattern() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> ?p ?o))");
-        RAWJenaIterator it = getRandomJenaIterator(op, dataset);
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, dataset);
         assertEquals(4, it.cardinality());
     }
 
@@ -83,7 +99,7 @@ class RAWJenaIteratorCardinalityTest {
     @Test
     public void cardinality_of_larger_triple_pattern_above_leaf_size() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> ?p ?o))");
-        RAWJenaIterator it = getRandomJenaIterator(op, smallerDataset);
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, smallerDataset);
         assertEquals(50, it.cardinality());
     }
 
@@ -101,13 +117,13 @@ class RAWJenaIteratorCardinalityTest {
         // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://schema.org/eligibleQuantity> ?v4))"); // expect 90000 get 79454
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://purl.org/goodrelations/price> ?v2))"); // expect 240000 get 234057
 
-        RAWJenaIterator it = getRandomJenaIterator(op, watdiv);
+        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, watdiv);
         assertEquals(50, it.cardinality());
         watdiv.end();
     }
 
 
-    public static RAWJenaIterator getRandomJenaIterator(OpBGP op, Dataset dataset) {
+    public static RAWJenaIteratorWrapper getRandomJenaIterator(OpBGP op, Dataset dataset) {
         DatasetGraphTDB activeGraph = TDBInternal.getDatasetGraphTDB(dataset);
 
         ExecutionContext execCxt = new ExecutionContext(
@@ -127,8 +143,9 @@ class RAWJenaIteratorCardinalityTest {
         NodeTupleTable nodeTupleTable = activeGraph.getTripleTable().getNodeTupleTable();
         PreemptStageMatchTuple.prepare(nodeTupleTable.getNodeTable(), patternTuple, BindingNodeId.root, ids, vars);
 
+        execCxt.getContext().set(SageConstants.iterators, new HashMap());
         RAWScanIteratorFactory f = new RAWScanIteratorFactory(execCxt);
-        return (RAWJenaIterator) f.getScan(nodeTupleTable, TupleFactory.create(ids), vars, 12);
+        return (RAWJenaIteratorWrapper) f.getScan(nodeTupleTable, TupleFactory.create(ids), vars, 12);
     }
 
 

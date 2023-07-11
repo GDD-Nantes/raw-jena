@@ -128,8 +128,8 @@ class OpExecutorRAWNLJTest {
         Op op = SSE.parseOp("(join (bgp (?a <http://species> <http://canine>)) (join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a))))");
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(ARQ.optimization, false);
+        final Long LIMIT = 1000L;
+        Context c = dataset.getContext().copy().set(RAWConstants.limit, LIMIT).set(ARQ.optimization, false);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
 
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);

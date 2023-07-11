@@ -85,7 +85,7 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
         return result.build();
     }
 
-    public long getCardinality() {
+    public long cardinality() {
         if (wrapped instanceof NullIterator) {
             return 0L;
         } else if (wrapped instanceof SingletonIterator) {

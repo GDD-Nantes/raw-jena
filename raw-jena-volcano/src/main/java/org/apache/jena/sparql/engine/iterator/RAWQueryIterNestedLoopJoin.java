@@ -1,6 +1,8 @@
 package org.apache.jena.sparql.engine.iterator;
 
+import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.arq.SageConstants;
+import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.SageInput;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.op.OpJoin;
@@ -25,7 +27,7 @@ public class RAWQueryIterNestedLoopJoin extends QueryIter1 {
     QueryIterator leftIterator;
     QueryIterator rightIterator;
 
-    SageInput<?> input;
+    RAWInput input;
 
     public RAWQueryIterNestedLoopJoin(OpJoin opJoin, QueryIterator input, ExecutionContext context) {
         super(input, context);
@@ -33,12 +35,12 @@ public class RAWQueryIterNestedLoopJoin extends QueryIter1 {
         left = leftIterator.hasNext() ? leftIterator.next() : null;
         rightIterator = QC.execute(opJoin.getRight(), input.nextBinding(), getExecContext());
         right = rightIterator.hasNext() ? rightIterator.next() : null;
-        this.input = context.getContext().get(SageConstants.input);
+        this.input = context.getContext().get(RAWConstants.input);
     }
 
     @Override
     protected boolean hasNextBinding() {
-        if (!isFirstExecution || System.currentTimeMillis() >= input.getDeadline()) {
+        if (!isFirstExecution) {
             return false;
         }
 

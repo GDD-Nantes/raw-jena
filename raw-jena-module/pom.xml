@@ -86,24 +86,6 @@
     
     <plugins>
       <plugin>
-        <!-- mvn dependency:build-classpath -Dmdep.outputFile=cp.txt -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.9</version>
-        <executions>
-          <execution>
-            <id>build-classpath</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>build-classpath</goal>
-            </goals>
-            <configuration>
-              <!-- configure the plugin here -->
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
@@ -128,7 +110,10 @@
           <mainClass>fr.gdd.sage.RAWFusekiServer</mainClass>
         </configuration>
       </plugin>
-      <plugin>
+      <!-- Tried to shade into one fat jar for docker, but it did not work well.
+      So instead, we export the all dependency `.jar` and update the classpath
+      accordingly. -->
+      <!--<plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.5.0</version>
@@ -140,7 +125,20 @@
             </goals>
           </execution>
         </executions>
+      </plugin>-->
+
+      <!-- mvn dependency:copy-dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <outputDirectory>
+            ${project.build.directory}
+          </outputDirectory>
+        </configuration>
       </plugin>
+
     </plugins>
   </build>
   

@@ -38,9 +38,9 @@
     </dependency>
 
     <dependency>
-      <!-- to get ShiroEnvironmentLoader; or 
+      <!-- to get ShiroEnvironmentLoader; or
            to get Services such as ActionServerStatus -->
-      <groupId>org.apache.jena</groupId> 
+      <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki-webapp</artifactId>
     </dependency>
     <dependency>
@@ -131,7 +131,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <phase>package</phase>

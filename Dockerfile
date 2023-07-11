@@ -14,7 +14,8 @@ RUN mvn install -Dmaven.test.skip=true
 
 WORKDIR /home/raw/raw-jena
 
-RUN mvn package -Dmaven.test.skip=true
+#RUN mvn package -Dmaven.test.skip=true
+RUN mvn install -Dmaven.test.skip=true
 
 WORKDIR /home/raw/raw-jena/raw-jena-ui
 
@@ -22,20 +23,23 @@ RUN apt-get update && apt-get -y install npm && npm install
 
 
 
-FROM amd64/eclipse-temurin:20.0.1_9-jre-alpine
+#FROM amd64/eclipse-temurin:20.0.1_9-jre-alpine
 
-WORKDIR /home/raw
-COPY --from=build /home/raw/raw-jena/raw-jena-ui ./
+#WORKDIR /home/raw
+#COPY --from=build /home/raw/raw-jena/raw-jena-ui ./
 
-RUN addgroup -S raw \
-    && adduser -G raw -S raw
+WORKDIR /home/raw/raw-jena
 
-RUN chown -R raw:raw /home/raw \
-    && chmod -R 755 /home/raw 
+# RUN addgroup -S raw \
+#    && adduser -G raw -S raw
 
-USER raw
+#RUN chown -R raw:raw /home/raw \
+#    && chmod -R 755 /home/raw 
 
-COPY --from=build /home/raw/raw-jena/raw-jena-module/target/raw-jena-module-0.0.1.jar ./
+#USER raw
 
-ENTRYPOINT ["java", "-jar", "raw-jena-module-0.0.1.jar"]
+##COPY --from=build /home/raw/raw-jena/raw-jena-module/target/raw-jena-module-0.0.1.jar ./
 
+#ENTRYPOINT ["java", "-jar", "raw-jena-module-0.0.1.jar"]
+
+ENTRYPOINT "mvn exec:java -pl raw-jena-module -Dexec.args=\"--database=/home/raw/database --port=8080 --ui=/home/raw/raw-jena/raw-jena-ui\" -Dmaven.test.skip=true"

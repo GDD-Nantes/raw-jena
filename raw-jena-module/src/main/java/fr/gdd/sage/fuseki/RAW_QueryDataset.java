@@ -6,6 +6,7 @@ import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.io.RAWInput;
 import org.apache.jena.base.Sys;
 import org.apache.jena.fuseki.servlets.HttpAction;
+import org.apache.jena.fuseki.servlets.ResponseResultSet;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
 
 import javax.servlet.http.HttpServletRequest;

@@ -114,7 +114,7 @@ public class RAWFusekiServer {
     static FusekiServer buildServer(String datasetPath, Dataset dataset, Integer port, String ui) {
         FusekiModules.add(new RAWModule());
 
-        ProgressJenaIterator.NB_WALKS = 42; // (TODO) let it be configurable
+        ProgressJenaIterator.NB_WALKS = 5; // (TODO) let it be configurable
 
         FusekiServer.Builder serverBuilder = FusekiServer.create()
                 // .parseConfigFile("configurations/sage.ttl")

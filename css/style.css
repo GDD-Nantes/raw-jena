@@ -164,3 +164,24 @@ svg {
     stroke: var(--frost-2);
     fill: var(--frost-2);
 }
+
+#loop_button {
+    width: 20px;
+    height:20px;
+    padding: 0px;
+
+    position: relative;
+    left: -10px;
+    top: -5px;
+    background-color: inherit;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+#loop_button_svg {
+    stroke: var(--aurora-1);
+    fill: var(--aurora-1);
+}

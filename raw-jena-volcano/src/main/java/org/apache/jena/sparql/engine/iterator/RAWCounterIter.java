@@ -5,14 +5,11 @@ import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.RAWOutput;
 import fr.gdd.sage.io.RAWOutputAggregated;
-import fr.gdd.sage.io.SageInput;
-import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.main.QC;
-import org.apache.jena.sparql.util.Context;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -65,7 +62,7 @@ public class RAWCounterIter extends QueryIterRepeatApply {
      */
     private boolean stoppingCondition() {
         input = Objects.isNull(input) ? getExecContext().getContext().get(RAWConstants.input) : input;
-        return input.limitReached(nbWalks) || input.deadlineReached();
+        return input.limitRWsReached(nbWalks) || input.deadlineReached() || input.limitReached(nbResults);
     }
 
     @Override
@@ -79,6 +76,8 @@ public class RAWCounterIter extends QueryIterRepeatApply {
             nextStage(initialBinding);
             nbWalks += 1;
         }
+
+        // (TODO) here there is an issue when hasNext is true.
 
         if (stoppingCondition()) {
             throw new PauseException();

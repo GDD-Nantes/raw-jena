@@ -98,7 +98,7 @@ public class RAWFusekiServer {
         }
 
         Dataset dataset = TDB2Factory.connectDataset(serverOptions.database);
-        dataset.getContext().setIfUndef(RAWConstants.limit, serverOptions.limit);
+        dataset.getContext().setIfUndef(RAWConstants.limitRWs, serverOptions.limit);
         dataset.getContext().setIfUndef(RAWConstants.timeout, serverOptions.timeout);
 
         FusekiServer server = buildServer(serverOptions.database, dataset, serverOptions.port, serverOptions.ui);

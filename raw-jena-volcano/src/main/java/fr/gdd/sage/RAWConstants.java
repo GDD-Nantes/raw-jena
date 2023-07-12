@@ -12,10 +12,10 @@ public class RAWConstants {
     public static final String rawSymbolPrefix = "RAW";
 
     public static Symbol timeout = allocConstantSymbol("Timeout");
-    public static Symbol limit   = allocConstantSymbol("Limit");
+    public static Symbol limitRWs = allocConstantSymbol("Limit");
 
     public static String argTimeout = "timeout";
-    public static String argLimit   = "limit";
+    public static String argLimitRWs = "limit"; // easier to state. On results is in query.
 
     public static Symbol outputProbability = allocVariableSymbol("_probability");
     public static Symbol output = allocVariableSymbol("Output");

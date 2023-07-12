@@ -47,11 +47,14 @@ class OpExecutorRAWNLJTest {
 
     @Test
     public void get_a_random_from_join() {
-        Op op = SSE.parseOp("(join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        String queryAsString = "(join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         // set ARQ.optimization to false in order to disable the merge of BGPs
-        Context c = dataset.getContext().copy().set(SageConstants.limit, 1).set(ARQ.optimization, false);
+        long LIMIT = 1;
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L).set(ARQ.optimization, false);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -129,7 +132,7 @@ class OpExecutorRAWNLJTest {
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final Long LIMIT = 1000L;
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, LIMIT).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, LIMIT).set(ARQ.optimization, false);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
 
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);

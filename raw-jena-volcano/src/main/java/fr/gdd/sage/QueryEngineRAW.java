@@ -1,22 +1,18 @@
 package fr.gdd.sage;
 
 import fr.gdd.sage.arq.IdentifierLinker;
-import fr.gdd.sage.arq.QueryEngineSage;
-import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.io.RAWInput;
 import fr.gdd.sage.io.RAWOutput;
 import fr.gdd.sage.io.RAWOutputAggregated;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Op;
-import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.OpLib;
 import org.apache.jena.sparql.algebra.op.OpSlice;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.engine.*;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.*;
-import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.mgt.Explain;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.tdb2.TDB2;
@@ -54,19 +50,20 @@ public class QueryEngineRAW extends QueryEngineTDB {
             Explain.explain("REWRITE(Union default graph)", op, context);
         }
 
-        if (op instanceof OpSlice) {
-            // we get the min of all limits
-            RAWInput rawInput = context.get(RAWConstants.input);
-            rawInput.setLimit(Math.min(rawInput.limit, ((OpSlice) op).getLength()));
-        }
-
         // #2 comes from {@link QueryEngineBase}
         ExecutionContext execCxt = new ExecutionContext(context, dsg.getDefaultGraph(), dsg,
                 new OpExecutorRAW.OpExecutorRandomFactory(context));
 
+        RAWInput rawInput = new RAWInput(execCxt.getContext());
+
+        if (op instanceof OpSlice) {
+            // we get the min of all limits
+            rawInput.setLimit(((OpSlice) op).getLength());
+        }
+
         execCxt.getContext().setIfUndef(RAWConstants.output, new RAWOutput(op));
         execCxt.getContext().setIfUndef(RAWConstants.outputAggregated, new RAWOutputAggregated());
-        execCxt.getContext().set(RAWConstants.input, new RAWInput(execCxt.getContext()));
+        execCxt.getContext().set(RAWConstants.input, rawInput);
 
         IdentifierLinker.create(execCxt, op, true);
 
@@ -116,7 +113,7 @@ public class QueryEngineRAW extends QueryEngineTDB {
         }
 
         private static boolean isNotInfiniteRandomWalking(Context context) {
-            return context.isDefined(RAWConstants.limit) || context.isDefined(RAWConstants.timeout);
+            return context.isDefined(RAWConstants.limitRWs) || context.isDefined(RAWConstants.timeout);
         }
 
         private static boolean onlySELECT(Query query) {

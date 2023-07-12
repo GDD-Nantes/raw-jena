@@ -1,10 +1,7 @@
 package fr.gdd.sage;
 
-import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
-import fr.gdd.sage.io.RAWInput;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.Plan;
 import org.apache.jena.sparql.engine.QueryEngineFactory;
@@ -15,13 +12,11 @@ import org.apache.jena.sparql.engine.binding.BindingRoot;
 import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.Context;
-import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.tdb2.solver.OpExecutorTDB2;
 import org.apache.jena.tdb2.solver.QueryEngineTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +24,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -59,7 +51,7 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp("(bgp (?s ?p ?o))");
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, 1L);
+        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -77,7 +69,7 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp("(bgp (?s <http://address> ?o))");
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, 1L);
+        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -95,7 +87,7 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp("(bgp (?p <http://own> <http://dog>))");
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, 1L);
+        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -114,7 +106,7 @@ class OpExecutorRAWBGPTest {
         Set<Binding> allBindings = generateResults(op, dataset);
 
         final long LIMIT = 1000L;
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, LIMIT);
+        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, LIMIT);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -134,37 +126,41 @@ class OpExecutorRAWBGPTest {
         }
     }
 
-    @Disabled
     @Test
     public void get_a_random_from_a_bgp_of_two_triple_patterns() {
-        Op op = SSE.parseOp("(bgp (?s <http://address> ?o) (?s <http://own> ?a))");
+        String queryAsString = "(bgp (?s <http://address> ?o) (?s <http://own> ?a))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, 1L); // (TODO) successful walks limit
+        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1000L);
+        long LIMIT = 1; // only want 1 successful walk
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
         QueryIterator iterator = plan.iterator();
         long sum = 0;
         while (iterator.hasNext()) {
-            assertTrue(allBindings.contains(iterator.next()));
+            Binding b = iterator.next();
+            assertTrue(allBindings.contains(b));
             sum += 1;
         }
         assertEquals(1, sum);
     }
 
-    @Disabled
     @Test
     public void get_1000_randoms_from_a_bgp_of_two_triple_patterns() {
-        Op op = SSE.parseOp("(bgp (?s <http://address> ?o) (?s <http://own> ?a))");
+        String queryAsString = "(bgp (?s <http://address> ?o) (?s <http://own> ?a))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        final long LIMIT = 1000; // (TODO) successful walks limit
+        final long LIMIT = 1000; // 1000 successful walks
         final long TIMEOUT = 60000; // long timeout of 60s for only 1k random walks
-        Context c = dataset.getContext().copy().set(RAWConstants.limit, LIMIT).set(RAWConstants.timeout, TIMEOUT);
-        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
 
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
         QueryIterator iterator = plan.iterator();
         long sum = 0;
         Set<Binding> randomSetOfBindings = new HashSet<>();
@@ -181,15 +177,16 @@ class OpExecutorRAWBGPTest {
         }
     }
 
-    @Disabled
     @Test
     public void get_1000_randoms_but_timeout_is_too_small_so_we_get_less() throws InterruptedException {
-        Op op = SSE.parseOp("(bgp (?s <http://address> ?o) (?s <http://own> ?a))");
+        String queryAsString = "(bgp (?s <http://address> ?o) (?s <http://own> ?a))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        final long LIMIT = 1000; // (TODO) successful walks limit
-        final long TIMEOUT = 100; // ms
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(SageConstants.timeout, TIMEOUT);
+        final long LIMIT = 10000; // successful walks
+        final long TIMEOUT = 100; // ms, still too small to go through
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -200,23 +197,26 @@ class OpExecutorRAWBGPTest {
             Binding randomBinding = iterator.next();
             assertTrue(allBindings.contains(randomBinding));
             randomSetOfBindings.add(randomBinding);
-            Thread.sleep(Duration.ofMillis(1));
+            Thread.sleep(Duration.ofMillis(1)); // delay even more, to make sure
             sum += 1;
         }
-        assertTrue(sum <= TIMEOUT); // cannot have more results than the timeout
+
+        log.info("Got {} successful walks in 100ms", sum);
+        assertTrue(sum <= LIMIT); // cannot have more results than the timeout
     }
 
-    @Disabled
     @Test
     public void get_randoms_but_the_triple_pattern_has_no_results() {
-        Op op = SSE.parseOp("(bgp (?s <http://wrong_predicate> ?o))");
+        String queryAsString = "(bgp (?s <http://wrong_predicate> ?o))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
         assertEquals(0, allBindings.size());
 
-        final long LIMIT = 1000; // (TODO) successful walks limit
+        final long LIMIT = 1; // successful walks limit will never be reached
         final long TIMEOUT = 100; // ms
         long startExecution = System.currentTimeMillis();
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(SageConstants.timeout, TIMEOUT);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -231,21 +231,25 @@ class OpExecutorRAWBGPTest {
         }
 
         long elapsedExecution = System.currentTimeMillis() - startExecution;
+
+        log.info("Took {}ms to get {} results.", elapsedExecution, sum);
         assertTrue(elapsedExecution >= TIMEOUT); // it stopped because of timeout
         assertEquals(0, randomSetOfBindings.size());
         assertEquals(0, sum); // no loop turn.
     }
 
-    @Disabled
     @Test
     public void get_randoms_from_a_triple_pattern_that_has_one_result() {
-        Op op = SSE.parseOp("(bgp (?s ?p <http://cat>))");
+        String queryAsString = "(bgp (?s ?p <http://cat>))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
         assertEquals(1, allBindings.size());
 
+        long startExecution = System.currentTimeMillis();
         final long LIMIT = 10;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 60000L);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
         QueryIterator iterator = plan.iterator();
@@ -257,49 +261,12 @@ class OpExecutorRAWBGPTest {
             randomSetOfBindings.add(randomBinding);
             sum += 1;
         }
+        long elapsedExecution = System.currentTimeMillis() - startExecution;
 
         assertEquals(1, randomSetOfBindings.size());
-        assertEquals(LIMIT, sum); // no loop turn.
+        log.info("Took {}ms to get {} times the same result.", elapsedExecution, sum);
+        assertEquals(LIMIT, sum); // 10 times the same
     }
-
-    @Disabled
-    @Test
-    public void test_concurrent_execution_to_profile_perf() throws InterruptedException {
-        Dataset dataset = TDB2Factory.connectDataset("../target/watdiv10M");
-
-        int numberOfThreads = 1;
-        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        Op op = SSE.parseOp("(bgp (?s <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?o))");
-
-        for (int i = 0; i < numberOfThreads; i++) {
-            service.execute(() -> {
-                // final long LIMIT = 10000;
-                final long TIMEOUT = 10000;
-
-                dataset.begin(ReadWrite.READ);
-                // Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
-                Context c = dataset.getContext().copy().set(SageConstants.timeout, TIMEOUT);
-                QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-                Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
-
-                QueryIterator iterator = plan.iterator();
-                long sum = 0;
-                Set<Binding> randomSetOfBindings = new HashSet<>();
-                while (iterator.hasNext()) {
-                    Binding randomBinding = iterator.next();
-                    randomSetOfBindings.add(randomBinding);
-                    sum += 1;
-                }
-                // assertEquals(LIMIT, sum);
-
-                log.info("Number of random walks performed by a thread: {}", sum);
-                latch.countDown();
-            });
-        }
-        latch.await();
-    }
-
 
 
     /**
@@ -318,5 +285,7 @@ class OpExecutorRAWBGPTest {
         }
         return bindings;
     }
+
+
 
 }

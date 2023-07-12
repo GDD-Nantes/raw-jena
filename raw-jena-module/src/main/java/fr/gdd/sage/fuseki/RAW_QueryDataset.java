@@ -1,12 +1,8 @@
 package fr.gdd.sage.fuseki;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.gdd.sage.RAWConstants;
 import fr.gdd.sage.io.RAWInput;
-import org.apache.jena.base.Sys;
 import org.apache.jena.fuseki.servlets.HttpAction;
-import org.apache.jena.fuseki.servlets.ResponseResultSet;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +32,7 @@ public class RAW_QueryDataset extends SPARQL_QueryDataset {
         }*/
 
         String timeoutFromRequest = getFromBodyOrHeader(RAWConstants.argTimeout, action);
-        String limitFromRequest = getFromBodyOrHeader(RAWConstants.argLimit, action);
+        String limitFromRequest = getFromBodyOrHeader(RAWConstants.argLimitRWs, action);
         RAWInput rawInput = new RAWInput(
                 Objects.nonNull(timeoutFromRequest) ? Long.parseLong(timeoutFromRequest) : null,
                 Objects.nonNull(limitFromRequest) ? Long.parseLong(limitFromRequest) : null);

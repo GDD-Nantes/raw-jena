@@ -1,7 +1,6 @@
 package fr.gdd.sage.io;
 
 import fr.gdd.sage.RAWConstants;
-import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.util.Context;
 
 import java.io.Serializable;
@@ -40,17 +39,18 @@ public class RAWInput implements Serializable {
 
     public RAWInput(Context context) {
         // server first, then client input
-        this.limit = context.isDefined(RAWConstants.limit) ? context.get(RAWConstants.limit) : limit;
+        this.limitRWs = context.isDefined(RAWConstants.limitRWs) ? context.get(RAWConstants.limitRWs) : limitRWs;
         this.setTimeout(context.isDefined(RAWConstants.timeout) ? context.get(RAWConstants.timeout) : timeout);
         if (context.isDefined(RAWConstants.input)) {
-            this.limit = Math.min(this.limit, ((RAWInput) context.get(RAWConstants.input)).limit);
+            this.limit = Math.min(this.limit,  ((RAWInput) context.get(RAWConstants.input)).limit);
+            this.limitRWs = Math.min(this.limitRWs, ((RAWInput) context.get(RAWConstants.input)).limitRWs);
             this.setTimeout(Math.min(this.timeout,  ((RAWInput)context.get(RAWConstants.input)).timeout));
         }
     }
 
-    public RAWInput(Long timeout, Long limit) {
-        if (Objects.nonNull(limit)) {
-            setLimit(limit);
+    public RAWInput(Long timeout, Long limitRWs) {
+        if (Objects.nonNull(limitRWs)) {
+            setLimitRWs(limitRWs);
         }
         if (Objects.nonNull(timeout)) {
             setTimeout(timeout);
@@ -67,12 +67,18 @@ public class RAWInput implements Serializable {
         this.limit = limit;
     }
 
+    public void setLimitRWs(long limitRWs) {
+        this.limitRWs = limitRWs;
+    }
+
     public boolean deadlineReached() {
         return System.currentTimeMillis() >= deadline;
     }
 
-    public boolean limitReached(long results) {
-        return results >= limit;
+    public boolean limitRWsReached(long nbRWs) {
+        return nbRWs >= limitRWs;
     }
+
+    public boolean limitReached(long nbResults) { return nbResults >= limit; }
 
 }

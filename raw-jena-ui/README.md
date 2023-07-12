@@ -6,11 +6,11 @@ additional data retrieved from the RAW server and display them. Among
 others, it aims to provide users with additional insights about their
 queries, such as: 
 
-- [ ] the approximate number of results of their query;
+- [X] the approximate number of results of their query;
 
-- [ ] the confidence interval for this approximation;
+- [X] the confidence interval for this approximation;
 
-- [ ] the number of random walks per node in their query plan.
+- [X] the number of random walks per node in their query plan.
 
 
 # Usage

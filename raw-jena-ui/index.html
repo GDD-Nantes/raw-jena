@@ -12,6 +12,7 @@
     <script type="module" src="./src/PlanView.js"></script>
     <script type="module" src="./src/QueryExamples.js"></script>
     <script type="module" src="./src/CardinalityGraph.js"></script>
+    <script type="module" src="./src/LoopButton.js"></script>
   </head>
   
   <body>
@@ -77,6 +78,10 @@
       const yasqe = yasgui.getTab().yasqe;
       const yasr  = yasgui.getTab().yasr;
 
+      import {LoopButton} from "./src/LoopButton.js";
+      const loop = new LoopButton(yasqe.queryBtn.parentNode);
+
+      
       import {QueryExamples} from "./src/QueryExamples.js";
       new QueryExamples(dialog, yasqe);
       
@@ -90,6 +95,10 @@
               // update response to include previous results. Ugly but works ok for now.
               resp.body.results.bindings = raw.payg.bindings;
               yasr.setResponse(resp, raw.payg.totalDuration);
+
+              if (loop.shouldLoop) {
+                  yasqe.queryBtn.onclick();
+              }
           }
       });
 
@@ -104,6 +113,8 @@
           }
           yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + " pause/resume)";
       };
+
+      console.log(yasqe);
       
     </script>
   </body>

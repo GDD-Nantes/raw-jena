@@ -9,12 +9,32 @@ import java.util.Objects;
 
 /**
  * Input objects that constitutes the configuration of a random walks query.
+ * It mainly sets the stopping conditions for walking.
  */
 public class RAWInput implements Serializable {
 
+    /**
+     * The number of random walks from the root to success or failure.
+     * *Not* the number of scans.
+     */
+    public long limitRWs = Long.MAX_VALUE;
+
+    /**
+     * The timeout before stopping the walks.
+     */
     public long timeout = Long.MAX_VALUE;
+
+    /**
+     * The number of random successful results.
+     */
     public long limit = Long.MAX_VALUE;
-    public long deadline = Long.MAX_VALUE;
+
+    /**
+     * The deadline comparatively to the time of query creation.
+     */
+    private long deadline = Long.MAX_VALUE;
+
+    /* ************************************************************************ */
 
     public RAWInput() {}
 

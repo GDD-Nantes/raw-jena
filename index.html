@@ -111,7 +111,7 @@
               yasr.results.bindings = yasr.plugins["RAW"].payg.bindings;
               updateResponseInfo.call(yasr);
           }
-          yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + " pause/resume)";
+          yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + (yasr.plugins["RAW"].payg.nbTimes > 1 ? " iterations)" : " iteration)");
       };
 
       console.log(yasqe);

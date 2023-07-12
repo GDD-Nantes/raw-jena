@@ -23,7 +23,7 @@ export class QueryExamples {
   ?x3 <http://www.wikidata.org/prop/direct/P6> ?x1 .
 }` },
         { name: "query 357",
-          description: "All people that are country along with their respective countinent (Mistakes?)",
+          description: "All people with their country and respective countinent (Mistakes?)",
           expect: 1327,
           query: `SELECT * WHERE {
   ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .

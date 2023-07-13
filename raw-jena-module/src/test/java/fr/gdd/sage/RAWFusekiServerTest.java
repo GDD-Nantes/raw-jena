@@ -47,7 +47,7 @@ class RAWFusekiServerTest {
 
         Watdiv10M watdiv = new Watdiv10M(Optional.of("../target/"));
         Dataset dataset = TDB2Factory.connectDataset(watdiv.dbPath_asStr);
-        FusekiServer server = RAWFusekiServer.buildServer(watdiv.dbPath_asStr, dataset, null);
+        FusekiServer server = RAWFusekiServer.buildServer(watdiv.dbPath_asStr, dataset, null, null);
         server.start();
 
         String url_asString = server.serverURL() + "watdiv10M/query";

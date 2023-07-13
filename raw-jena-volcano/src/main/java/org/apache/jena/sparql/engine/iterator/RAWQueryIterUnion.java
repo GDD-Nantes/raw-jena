@@ -22,19 +22,14 @@ public class RAWQueryIterUnion extends QueryIter1 {
     List<Op> initialOps;
 
     QueryIterator current;
-
-    SageInput<?> input;
-
     boolean isFirstExecution = true;
-    Binding initialBinding;
 
     public RAWQueryIterUnion(QueryIterator input,
                              List<Op> subOps,
                              ExecutionContext context) {
         super(input, context);
         initialOps = new ArrayList<>(subOps);
-        this.input = context.getContext().get(SageConstants.input);
-        initialBinding = getInput().next();
+        Binding initialBinding = getInput().next();
 
         Collections.shuffle(initialOps); // each new instance get a different order
         Op subOp = QC.substitute(initialOps.get(0), initialBinding) ;
@@ -44,11 +39,7 @@ public class RAWQueryIterUnion extends QueryIter1 {
 
     @Override
     protected boolean hasNextBinding() {
-        if (!isFirstExecution || System.currentTimeMillis() >= input.getDeadline()) {
-            return false;
-        }
-
-        return current.hasNext();
+        return isFirstExecution && current.hasNext();
     }
 
     @Override

@@ -27,7 +27,6 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
 
     Iterator<Tuple<NodeId>> wrapped;
     Integer id;
-    RAWInput input;
     RAWOutput output;
     ExecutionContext context;
 
@@ -36,10 +35,13 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
     NodeTupleTable ntt;
     Var[] vars;
 
+    public RAWJenaIteratorWrapper(Integer id) {
+        this.wrapped = new NullIterator<>();
+        this.id = id;
+    }
 
     public RAWJenaIteratorWrapper(Iterator<Tuple<NodeId>> wrapped, Integer id, Var[] vars, NodeTupleTable nodeTupleTable, ExecutionContext context) {
         this.wrapped = wrapped;
-        this.input = context.getContext().get(RAWConstants.input);
         this.output = context.getContext().get(RAWConstants.output);
         this.context = context;
         this.id = id;
@@ -53,9 +55,6 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
 
     @Override
     public boolean hasNext() {
-        if (input.deadlineReached()) { //|| input.limitReached(output.getNbScans())) {
-            throw new PauseException();
-        }
         return wrapped.hasNext();
     }
 

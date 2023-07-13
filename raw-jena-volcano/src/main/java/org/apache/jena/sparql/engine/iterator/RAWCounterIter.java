@@ -73,8 +73,8 @@ public class RAWCounterIter extends QueryIterRepeatApply {
             HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
             outputAggregated.addResult(iterators);
             output.addResultThenClear(iterators);
-            nextStage(initialBinding);
             nbWalks += 1;
+            nextStage(initialBinding);
         }
 
         // (TODO) here there is an issue when hasNext is true.
@@ -88,6 +88,11 @@ public class RAWCounterIter extends QueryIterRepeatApply {
 
     @Override
     protected Binding moveToNextBinding() {
+        getExecContext().getContext().set(SageConstants.cursor, 0);
+        HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
+        outputAggregated.addResult(iterators);
+        output.addResultThenClear(iterators);
+        nbWalks += 1;
         nbResults += 1; // got an actual result
         return current.next();
     }

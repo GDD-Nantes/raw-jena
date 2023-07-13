@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OpExecutorRAWBGPTest {
 
-    private static Logger log = LoggerFactory.getLogger(OpExecutorRAWBGPTest.class);
+    private static final Logger log = LoggerFactory.getLogger(OpExecutorRAWBGPTest.class);
 
     static Dataset dataset;
 
@@ -102,11 +102,13 @@ class OpExecutorRAWBGPTest {
 
     @Test
     public void get_1000_randoms_from_a_triple_pattern() {
-        Op op = SSE.parseOp("(bgp (?s <http://address> ?o))");
+        String queryAsString = "(bgp (?s <http://address> ?o))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        final long LIMIT = 1000L;
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, LIMIT);
+        final long LIMIT = 1000;
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 

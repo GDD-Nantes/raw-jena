@@ -17,6 +17,7 @@ import org.apache.jena.sparql.util.Context;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OpExecutorRAWOptionalTest {
 
-    private static Logger log = LoggerFactory.getLogger(OpExecutorRAWOptionalTest.class);
+    private static final Logger log = LoggerFactory.getLogger(OpExecutorRAWOptionalTest.class);
 
     static Dataset dataset;
 
@@ -45,10 +46,14 @@ class OpExecutorRAWOptionalTest {
 
     @Test
     public void get_a_random_from_an_option() {
-        Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        // The optional part cannot fail since it comprises only one triple
+        String queryAsString = "(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 1000L);
+        long LIMIT = 1;
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -62,17 +67,18 @@ class OpExecutorRAWOptionalTest {
         }
 
         log.debug("Random result from optional: {}", result);
-        assertEquals(1, sum);
+        assertEquals(LIMIT, sum);
     }
-
 
     @Test
     public void get_1000_randoms_from_an_option() {
-        Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        String queryAsString = "(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -99,11 +105,13 @@ class OpExecutorRAWOptionalTest {
 
     @Test
     public void get_1000_random_from_optional_that_succeed_and_fail_in_option() {
-        Op op = SSE.parseOp("(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a) (?a <http://species> <http://canine>)))");
+        String queryAsString = "(conditional (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a) (?a <http://species> <http://canine>)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -113,6 +121,8 @@ class OpExecutorRAWOptionalTest {
             Binding randomBinding = iterator.next();
             // cannot assert since mandatory alone is sometime not in the results set
             // assertTrue(allBindings.contains(randomBinding));
+            // among other: ( ?o/[0x              A7] = <http://nantes> ) ( ?s/[0x              67] = <http://Alice> )
+            // has a dog, but still appears alone with high probability.
             randomSetOfBindings.add(randomBinding);
         }
         assertEquals(LIMIT, randomSetOfBindings.size());
@@ -120,23 +130,28 @@ class OpExecutorRAWOptionalTest {
         assertNotEquals(allBindings.size(), randomSetOfBindings.elementSet().size());
         for (Binding existingBinding : allBindings) {
             randomSetOfBindings.contains(existingBinding);
+            log.debug("Exists: {}", existingBinding);
         }
 
         // It should highlight a skew: Of course, mandatory parts without optional parts
         // appear more often than mandatory+optional since the random is divided between
         // the sub path that are optional.
         for (Binding binding : randomSetOfBindings.elementSet()) {
-            log.debug("{} -> {}", binding, randomSetOfBindings.count(binding));
+            log.debug("Got {} -> {}", binding, randomSetOfBindings.count(binding));
         }
     }
 
     @Test
     public void mandatory_part_of_optional_is_empty() {
-        Op op = SSE.parseOp("(conditional (bgp (?s <http://nothing> ?o)) (bgp (?s <http://own> ?a)))");
+        String queryAsString = "(conditional (bgp (?s <http://nothing> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
+        Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
+        assertEquals(0, allBindings.size());
 
         final long LIMIT = 100;
-        final long TIMEOUT = 100; // 1s
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(SageConstants.timeout, TIMEOUT);
+        final long TIMEOUT = 1000; // 1s
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 

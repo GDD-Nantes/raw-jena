@@ -36,10 +36,11 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RAWJenaIteratorCardinalityTest {
 
-    Logger log = LoggerFactory.getLogger(RAWJenaIteratorCardinalityTest.class);
+    private static final Logger log = LoggerFactory.getLogger(RAWJenaIteratorCardinalityTest.class);
 
     static Dataset dataset;
     static Dataset smallerDataset;
@@ -64,7 +65,6 @@ class RAWJenaIteratorCardinalityTest {
         assertEquals(1, it.cardinality());
     }
 
-    @Disabled
     @Test
     public void cardinality_of_fully_bounded_missing_triple() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> <http://own> <http://licorne>))");
@@ -72,8 +72,6 @@ class RAWJenaIteratorCardinalityTest {
         assertEquals(0, it.cardinality());
     }
 
-
-    @Disabled
     @Test
     public void cardinality_of_nothing_but_not_fully_bounded_triple() {
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (?s ?p <http://licorne>))");
@@ -95,14 +93,14 @@ class RAWJenaIteratorCardinalityTest {
         assertEquals(4, it.cardinality());
     }
 
-    @Disabled
     @Test
     public void cardinality_of_larger_triple_pattern_above_leaf_size() {
+        ProgressJenaIterator.NB_WALKS = 1000; // we want a precise estimate :p
         OpBGP op = (OpBGP) SSE.parseOp("(bgp (<http://Alice> ?p ?o))");
         RAWJenaIteratorWrapper it = getRandomJenaIterator(op, smallerDataset);
-        assertEquals(50, it.cardinality());
+        log.debug("Got estimation of {} but actually its 50.", it.cardinality());
+        assertTrue(40 <= it.cardinality() &&  it.cardinality() <= 50); // ± 10 (but we have no guarantee on accuracy…)
     }
-
 
     @Test
     @EnabledIfEnvironmentVariable(named = "WATDIV", matches = "true")
@@ -124,6 +122,7 @@ class RAWJenaIteratorCardinalityTest {
 
 
     public static RAWJenaIteratorWrapper getRandomJenaIterator(OpBGP op, Dataset dataset) {
+        // rough copy from {@link PreemptStageMatchTuple}
         DatasetGraphTDB activeGraph = TDBInternal.getDatasetGraphTDB(dataset);
 
         ExecutionContext execCxt = new ExecutionContext(
@@ -141,11 +140,15 @@ class RAWJenaIteratorCardinalityTest {
         final Var[] vars = new Var[patternTuple.len()]; // Variables for this tuple after substitution
 
         NodeTupleTable nodeTupleTable = activeGraph.getTripleTable().getNodeTupleTable();
-        PreemptStageMatchTuple.prepare(nodeTupleTable.getNodeTable(), patternTuple, BindingNodeId.root, ids, vars);
+        boolean found = PreemptStageMatchTuple.prepare(nodeTupleTable.getNodeTable(), patternTuple, BindingNodeId.root, ids, vars);
 
         execCxt.getContext().set(SageConstants.iterators, new HashMap());
         RAWScanIteratorFactory f = new RAWScanIteratorFactory(execCxt);
-        return (RAWJenaIteratorWrapper) f.getScan(nodeTupleTable, TupleFactory.create(ids), vars, 12);
+        if (found) {
+            return (RAWJenaIteratorWrapper) f.getScan(nodeTupleTable, TupleFactory.create(ids), vars, 12);
+        } else {
+            return (RAWJenaIteratorWrapper) f.getScan(12);
+        }
     }
 
 

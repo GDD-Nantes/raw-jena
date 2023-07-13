@@ -127,14 +127,17 @@ public class RAWFusekiServer {
                 .port(port)
                 .numServerThreads(1, 10)
                 // .loopback(false)
-                .serverAuthPolicy(Auth.ANY_ANON)
-                .addProcessor("/$/server", new ActionServerStatus())
-                //.addProcessor("/$/datasets/*", new ActionDatasets())
-                .add(Path.of(datasetPath).getFileName().toString(), dataset)
+                // .serverAuthPolicy(Auth.ANY_ANON)
+                // .addProcessor("/$/server", new ActionServerStatus())
+                // .addProcessor("/$/datasets/*", new ActionDatasets())
+                .add(String.format("RAW_%s",Path.of(datasetPath).getFileName().toString()), dataset);
                 // .auth(AuthScheme.BASIC)
-                .addEndpoint(Path.of(datasetPath).getFileName().toString(),
-                        Path.of(datasetPath).getFileName().toString(),
-                        Operation.Query, Auth.ANY_ANON);
+                //.addEndpoint(String.format("RAW_%s",Path.of(datasetPath).getFileName().toString()),
+                //        Path.of(datasetPath).getFileName().toString(),
+                //        Operation.Query, Auth.ANY_ANON)
+                //.addEndpoint(Path.of(datasetPath).getFileName().toString(),
+                //       Path.of(datasetPath).getFileName().toString(),
+                //        Operation.Query, Auth.ANY_ANON);
 
         if (Objects.nonNull(ui)) { // add UI if need be
             serverBuilder.staticFileBase(ui);

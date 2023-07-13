@@ -27,31 +27,25 @@ public class RAWQueryIterNestedLoopJoin extends QueryIter1 {
     QueryIterator leftIterator;
     QueryIterator rightIterator;
 
-    RAWInput input;
-
     public RAWQueryIterNestedLoopJoin(OpJoin opJoin, QueryIterator input, ExecutionContext context) {
         super(input, context);
-        leftIterator = QC.execute(opJoin.getLeft(), QueryIterRoot.create(getExecContext()), context);
+        leftIterator = QC.execute(opJoin.getLeft(), input.nextBinding(), getExecContext());
         left = leftIterator.hasNext() ? leftIterator.next() : null;
-        rightIterator = QC.execute(opJoin.getRight(), input.nextBinding(), getExecContext());
+        rightIterator = QC.execute(opJoin.getRight(), left, getExecContext());
         right = rightIterator.hasNext() ? rightIterator.next() : null;
-        this.input = context.getContext().get(RAWConstants.input);
     }
 
     @Override
     protected boolean hasNextBinding() {
-        if (!isFirstExecution) {
-            return false;
-        }
-
-        return Objects.nonNull(left) && Objects.nonNull(right) && Objects.nonNull(Algebra.merge(left, right));
+        return isFirstExecution &&
+                Objects.nonNull(left) &&
+                Objects.nonNull(right);
     }
 
     @Override
     protected Binding moveToNextBinding() {
         isFirstExecution = false;
-
-        return Algebra.merge(left, right);
+        return right;
     }
 
 

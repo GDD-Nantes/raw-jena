@@ -1,6 +1,7 @@
 package fr.gdd.sage.io;
 
 import fr.gdd.sage.RAWConstants;
+import org.apache.jena.base.Sys;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFactory;

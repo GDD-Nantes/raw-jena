@@ -1,6 +1,5 @@
 package fr.gdd.sage;
 
-import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.ext.com.google.common.collect.HashMultiset;
 import org.apache.jena.ext.com.google.common.collect.Multiset;
@@ -29,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OpExecutorRAWNLJTest {
 
-    private static Logger log = LoggerFactory.getLogger(OpExecutorRAWNLJTest.class);
+    private static final Logger log = LoggerFactory.getLogger(OpExecutorRAWNLJTest.class);
 
     static Dataset dataset;
 
@@ -72,12 +71,14 @@ class OpExecutorRAWNLJTest {
 
     @Test
     public void get_1000_randoms_from_a_join_of_bgp() {
-        Op op = SSE.parseOp("(join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        String queryAsString = "(join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
         // set ARQ.optimization to false in order to disable the merge of BGPs
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L).set(ARQ.optimization, false);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -101,12 +102,14 @@ class OpExecutorRAWNLJTest {
 
     @Test
     public void get_a_random_from_join_without_results() {
-        Op op = SSE.parseOp("(join (bgp (?s <http://address> ?o)) (bgp (?s ?l <http://nowhere>)))");
+        String queryAsString = "(join (bgp (?s <http://address> ?o)) (bgp (?s ?l <http://nowhere>)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1;
-        final long TIMEOUT = 100;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT).set(SageConstants.timeout, TIMEOUT).set(ARQ.optimization, false);
+        final long TIMEOUT = 1000;
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT).set(ARQ.optimization, false);
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
 
         long startExecution = System.currentTimeMillis();
@@ -128,11 +131,13 @@ class OpExecutorRAWNLJTest {
 
     @Test
     public void join_of_a_join() {
-        Op op = SSE.parseOp("(join (bgp (?a <http://species> <http://canine>)) (join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a))))");
+        String queryAsString = "(join (bgp (?a <http://species> <http://canine>)) (join (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a))))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        final Long LIMIT = 1000L;
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, LIMIT).set(ARQ.optimization, false);
+        final Long LIMIT = 10L; // there is one result that we get 10 times easily below 2s time mark.
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 2000L).set(ARQ.optimization, false);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
 
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);

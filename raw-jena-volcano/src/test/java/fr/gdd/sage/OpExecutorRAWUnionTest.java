@@ -17,6 +17,7 @@ import org.apache.jena.sparql.util.Context;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ class OpExecutorRAWUnionTest {
     @BeforeAll
     public static void initializeDB() {
         dataset = new InMemoryInstanceOfTDB2ForRandom().getDataset();
+        dataset.getContext().set(RAWConstants.timeout, 1000L);
         QueryEngineRAW.register();
     }
 
@@ -46,12 +48,14 @@ class OpExecutorRAWUnionTest {
 
     @Test
     public void get_a_random_from_union() {
-        Op op = SSE.parseOp("(union (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        String queryAsString = "(union (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(SageConstants.limit, 1);
-        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+        long LIMIT = 1;
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), dataset.getContext());
 
         QueryIterator iterator = plan.iterator();
         long sum = 0;
@@ -62,16 +66,16 @@ class OpExecutorRAWUnionTest {
         assertEquals(1, sum);
     }
 
-
     @Test
     public void get_1000_randoms_from_a_union_of_bgp() {
-        Op op = SSE.parseOp("(union (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))");
+        String queryAsString = "(union (bgp (?s <http://address> ?o)) (bgp (?s <http://own> ?a)))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
-        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), dataset.getContext());
 
         QueryIterator iterator = plan.iterator();
         Multiset<Binding> randomSetOfBindings = HashMultiset.create();
@@ -93,13 +97,14 @@ class OpExecutorRAWUnionTest {
 
     @Test
     public void get_1000_randoms_from_a_union_inside_bgp() {
-        Op op = SSE.parseOp("(join (bgp (?a <http://species> ?s)) (union (bgp (?n <http://address> ?o)) (bgp (?n <http://own> ?a))))");
+        String queryAsString = "(join (bgp (?a <http://species> ?s)) (union (bgp (?n <http://address> ?o)) (bgp (?n <http://own> ?a))))";
+        Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
-        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
-        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+        op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), dataset.getContext());
 
         QueryIterator iterator = plan.iterator();
         Multiset<Binding> randomSetOfBindings = HashMultiset.create();

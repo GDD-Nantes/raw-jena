@@ -23,7 +23,6 @@ public class RAWQueryIterOptionalIndex extends QueryIter1 {
     QueryIterator rightIterator;
 
     boolean isFirstExecution = true;
-    SageInput<?> input;
     Binding mandatory;
 
     public RAWQueryIterOptionalIndex(QueryIterator input, Op rightOp, ExecutionContext execCxt) {
@@ -32,16 +31,11 @@ public class RAWQueryIterOptionalIndex extends QueryIter1 {
             mandatory = input.nextBinding();
             rightIterator = QC.execute(rightOp, mandatory, execCxt);
         }
-        this.input = execCxt.getContext().get(SageConstants.input);
     }
 
     @Override
     protected boolean hasNextBinding() {
-        if (!isFirstExecution || System.currentTimeMillis() >= input.getDeadline()) {
-            return false;
-        }
-
-        return Objects.nonNull(mandatory); // as soon as the mandatory part is ok, the rest is ok
+        return isFirstExecution && Objects.nonNull(mandatory); // as soon as the mandatory part is ok, the rest is ok
     }
 
     @Override

@@ -13,7 +13,7 @@ export class QueryExamples {
         { name: "query 209",
           query: "" },
         { name: "query 347",
-          description: "All cities that are a country and in this country along with their mayor",
+          description: "All cities and associated country with their mayor as head of government",
           expect: 1,
           query: `SELECT * WHERE {
   ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .
@@ -23,7 +23,7 @@ export class QueryExamples {
   ?x3 <http://www.wikidata.org/prop/direct/P6> ?x1 .
 }` },
         { name: "query 357",
-          description: "All people with their country and respective countinent (Mistakes?)",
+          description: "All people with their country and respective continent (Mistakes?)",
           expect: 1327,
           query: `SELECT * WHERE {
   ?x1 <http://www.wikidata.org/prop/direct/P17> ?x2 .

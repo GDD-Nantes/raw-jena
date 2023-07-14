@@ -44,7 +44,6 @@ public class RAWCounterIter extends QueryIterRepeatApply {
         outputAggregated = context.getContext().get(RAWConstants.outputAggregated);
         this.initialBinding = initialBinding;
         this.op = op;
-        this.nextStage(initialBinding);
     }
 
     @Override
@@ -67,32 +66,30 @@ public class RAWCounterIter extends QueryIterRepeatApply {
 
     @Override
     protected boolean hasNextBinding() {
-
-        while (!stoppingCondition() && !current.hasNext()) {
-            getExecContext().getContext().set(SageConstants.cursor, 0);
-            HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
-            outputAggregated.addResult(iterators);
-            output.addResultThenClear(iterators);
-            nbWalks += 1;
-            nextStage(initialBinding);
-        }
-
-        // (TODO) here there is an issue when hasNext is true.
-
         if (stoppingCondition()) {
             throw new PauseException();
         }
-
         return true;
     }
 
     @Override
     protected Binding moveToNextBinding() {
-        getExecContext().getContext().set(SageConstants.cursor, 0);
-        HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
-        outputAggregated.addResult(iterators);
-        output.addResultThenClear(iterators);
-        nbWalks += 1;
+        while (!stoppingCondition() && (Objects.isNull(current) || !current.hasNext())) {
+            getExecContext().getContext().set(SageConstants.cursor, 0);
+            nextStage(initialBinding);
+            current.hasNext();
+
+            HashMap<Integer, RAWJenaIteratorWrapper> iterators = getExecContext().getContext().get(SageConstants.iterators);
+            outputAggregated.addResult(iterators);
+            output.addResultThenClear(iterators);
+            nbWalks += 1;
+        }
+
+        // we let the RWsReached condition let go its successful value. This is the last walk anyway.
+        if (stoppingCondition() && !(input.limitRWsReached(nbWalks) && current.hasNext())) {
+            throw new PauseException();
+        }
+
         nbResults += 1; // got an actual result
         return current.next();
     }

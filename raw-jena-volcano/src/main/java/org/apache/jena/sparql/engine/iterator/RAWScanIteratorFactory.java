@@ -26,7 +26,7 @@ public class RAWScanIteratorFactory extends PreemptScanIteratorFactory implement
 
     @Override
     public Iterator<Tuple<NodeId>> getScan(Integer id) {
-        return new RAWJenaIteratorWrapper(id);
+        return new RAWJenaIteratorWrapper(id, context);
     }
 
     @Override

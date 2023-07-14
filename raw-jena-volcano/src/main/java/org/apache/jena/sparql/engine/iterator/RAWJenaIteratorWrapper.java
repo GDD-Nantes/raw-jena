@@ -35,9 +35,12 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
     NodeTupleTable ntt;
     Var[] vars;
 
-    public RAWJenaIteratorWrapper(Integer id) {
+    public RAWJenaIteratorWrapper(Integer id, ExecutionContext context) {
         this.wrapped = new NullIterator<>();
         this.id = id;
+
+        HashMap<Integer, RAWJenaIteratorWrapper> iterators = context.getContext().get(SageConstants.iterators);
+        iterators.put(id, this);
     }
 
     public RAWJenaIteratorWrapper(Iterator<Tuple<NodeId>> wrapped, Integer id, Var[] vars, NodeTupleTable nodeTupleTable, ExecutionContext context) {

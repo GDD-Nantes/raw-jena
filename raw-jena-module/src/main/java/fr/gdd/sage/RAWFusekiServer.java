@@ -6,7 +6,6 @@ import org.apache.jena.dboe.trans.bplustree.ProgressJenaIterator;
 import org.apache.jena.fuseki.auth.Auth;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.sys.FusekiModules;
-import org.apache.jena.fuseki.mgt.ActionServerStatus;
 import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
@@ -130,14 +129,14 @@ public class RAWFusekiServer {
                 // .serverAuthPolicy(Auth.ANY_ANON)
                 // .addProcessor("/$/server", new ActionServerStatus())
                 // .addProcessor("/$/datasets/*", new ActionDatasets())
-                .add(String.format("RAW_%s",Path.of(datasetPath).getFileName().toString()), dataset);
+                .add(Path.of(datasetPath).getFileName().toString(), dataset)
                 // .auth(AuthScheme.BASIC)
                 //.addEndpoint(String.format("RAW_%s",Path.of(datasetPath).getFileName().toString()),
                 //        Path.of(datasetPath).getFileName().toString(),
                 //        Operation.Query, Auth.ANY_ANON)
-                //.addEndpoint(Path.of(datasetPath).getFileName().toString(),
-                //       Path.of(datasetPath).getFileName().toString(),
-                //        Operation.Query, Auth.ANY_ANON);
+                .addEndpoint(Path.of(datasetPath).getFileName().toString(),
+                       Path.of(datasetPath).getFileName().toString(),
+                        Operation.Query, Auth.ANY_ANON);
 
         if (Objects.nonNull(ui)) { // add UI if need be
             serverBuilder.staticFileBase(ui);

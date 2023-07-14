@@ -57,13 +57,16 @@ export class QueryExamples {
         { name: "query 604",
           description: "All pairs of people with identical birth and death dates",
           expect: 25276453,
-          query: `SELECT * WHERE {
-    ?x1 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .
-    ?x2 <http://www.wikidata.org/prop/direct/P31> <http://www.wikidata.org/entity/Q5> .
-    ?x1 <http://www.wikidata.org/prop/direct/P569> ?x3 .
-    ?x2 <http://www.wikidata.org/prop/direct/P569> ?x3 .
-    ?x1 <http://www.wikidata.org/prop/direct/P570> ?x4 .
-    ?x2 <http://www.wikidata.org/prop/direct/P570> ?x4 .
+          query: `PREFIX wdd: <http://www.wikidata.org/prop/direct/>
+PREFIX wde: <http://www.wikidata.org/entity/>
+
+SELECT * WHERE {
+    ?x1 wdd:P31  wde:Q5 .  # a human being
+    ?x2 wdd:P31  wde:Q5 .  # another human being
+    ?x1 wdd:P569 ?x3 .     # with a birthdate
+    ?x2 wdd:P569 ?x3 .     # birthdate is identical
+    ?x1 wdd:P570 ?x4 .     # with a date of death
+    ?x2 wdd:P570 ?x4 .     # death date is identical
 }`
         },
         { name: "query 605",

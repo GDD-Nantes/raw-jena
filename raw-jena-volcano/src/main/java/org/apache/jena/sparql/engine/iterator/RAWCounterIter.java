@@ -1,10 +1,10 @@
 package org.apache.jena.sparql.engine.iterator;
 
-import fr.gdd.sage.RAWConstants;
+import fr.gdd.raw.RAWConstants;
 import fr.gdd.sage.arq.SageConstants;
-import fr.gdd.sage.io.RAWInput;
-import fr.gdd.sage.io.RAWOutput;
-import fr.gdd.sage.io.RAWOutputAggregated;
+import fr.gdd.raw.io.RAWInput;
+import fr.gdd.raw.io.RAWOutput;
+import fr.gdd.raw.io.RAWOutputAggregated;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;

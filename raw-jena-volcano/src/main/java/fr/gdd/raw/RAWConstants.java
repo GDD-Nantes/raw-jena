@@ -1,4 +1,4 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
 import org.apache.jena.sparql.util.Symbol;
 

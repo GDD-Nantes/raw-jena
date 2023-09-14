@@ -1,4 +1,4 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class RAWOutputAggregated implements Serializable {
 
-    HashMap<Integer, Long> node2cardinality = new HashMap<>();
+    HashMap<Integer, Double> node2cardinality = new HashMap<>();
     HashMap<Integer, Long> node2nbWalks = new HashMap<>();
 
     public RAWOutputAggregated() { }
@@ -20,7 +20,7 @@ public class RAWOutputAggregated implements Serializable {
     public void addResult(HashMap<Integer, RAWJenaIteratorWrapper> iterators) {
         for (Map.Entry<Integer, RAWJenaIteratorWrapper> kv: iterators.entrySet()) {
             if (!node2cardinality.containsKey(kv.getKey())) {
-                node2cardinality.put(kv.getKey(), 0L);
+                node2cardinality.put(kv.getKey(), 0.);
             }
             node2cardinality.put(kv.getKey(), node2cardinality.get(kv.getKey()) + kv.getValue().cardinality());
 
@@ -31,7 +31,7 @@ public class RAWOutputAggregated implements Serializable {
         }
     }
 
-    public HashMap<Integer, Long> getNode2cardinality() {
+    public HashMap<Integer, Double> getNode2cardinality() {
         return node2cardinality;
     }
 

@@ -1,9 +1,8 @@
 package org.apache.jena.sparql.engine.iterator;
 
-import fr.gdd.sage.RAWConstants;
+import fr.gdd.raw.RAWConstants;
 import fr.gdd.sage.arq.SageConstants;
-import fr.gdd.sage.io.RAWInput;
-import fr.gdd.sage.io.RAWOutput;
+import fr.gdd.raw.io.RAWOutput;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.dboe.trans.bplustree.RAWJenaIterator;
 import org.apache.jena.sparql.core.Var;
@@ -87,7 +86,7 @@ public class RAWJenaIteratorWrapper implements Iterator<Tuple<NodeId>> {
         return result.build();
     }
 
-    public long cardinality() {
+    public double cardinality() {
         if (wrapped instanceof NullIterator) {
             return 0L;
         } else if (wrapped instanceof SingletonIterator) {

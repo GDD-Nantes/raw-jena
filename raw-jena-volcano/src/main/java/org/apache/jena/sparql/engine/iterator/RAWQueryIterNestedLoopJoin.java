@@ -1,10 +1,5 @@
 package org.apache.jena.sparql.engine.iterator;
 
-import fr.gdd.sage.RAWConstants;
-import fr.gdd.sage.arq.SageConstants;
-import fr.gdd.sage.io.RAWInput;
-import fr.gdd.sage.io.SageInput;
-import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.op.OpJoin;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;

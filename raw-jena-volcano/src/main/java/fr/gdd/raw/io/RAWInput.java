@@ -1,6 +1,6 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
-import fr.gdd.sage.RAWConstants;
+import fr.gdd.raw.RAWConstants;
 import org.apache.jena.sparql.util.Context;
 
 import java.io.Serializable;

@@ -1,4 +1,4 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
 import org.apache.jena.sparql.algebra.OpVisitor;
 import org.apache.jena.sparql.algebra.op.*;

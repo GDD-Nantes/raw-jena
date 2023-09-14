@@ -1,5 +1,8 @@
 package fr.gdd.sage;
 
+import fr.gdd.raw.QueryEngineRAW;
+import fr.gdd.raw.RAWConstants;
+import fr.gdd.raw.io.RAWInput;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.ext.com.google.common.collect.HashMultiset;
 import org.apache.jena.ext.com.google.common.collect.Multiset;
@@ -52,7 +55,9 @@ class OpExecutorRAWNLJTest {
 
         // set ARQ.optimization to false in order to disable the merge of BGPs
         long LIMIT = 1;
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L)
+                .set(ARQ.optimization, false)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -77,7 +82,9 @@ class OpExecutorRAWNLJTest {
 
         final long LIMIT = 1000;
         // set ARQ.optimization to false in order to disable the merge of BGPs
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L)
+                .set(ARQ.optimization, false)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -109,7 +116,10 @@ class OpExecutorRAWNLJTest {
         final long LIMIT = 1;
         final long TIMEOUT = 1000;
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, TIMEOUT)
+                .set(ARQ.optimization, false)
+                .set(RAWConstants.input, new RAWInput());
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
 
         long startExecution = System.currentTimeMillis();
@@ -136,7 +146,10 @@ class OpExecutorRAWNLJTest {
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final Long LIMIT = 10L; // there is one result that we get 10 times easily below 2s time mark.
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 2000L).set(ARQ.optimization, false);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, 2000L)
+                .set(ARQ.optimization, false)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
 

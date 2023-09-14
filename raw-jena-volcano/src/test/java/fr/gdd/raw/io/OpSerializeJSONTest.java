@@ -1,11 +1,10 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
+import fr.gdd.raw.io.OpSerializeJSON;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.sse.SSE;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Just making sure that it generates proper JSON.

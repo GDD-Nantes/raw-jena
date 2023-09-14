@@ -1,5 +1,8 @@
 package fr.gdd.sage;
 
+import fr.gdd.raw.QueryEngineRAW;
+import fr.gdd.raw.RAWConstants;
+import fr.gdd.raw.io.RAWInput;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.sparql.algebra.Op;
@@ -51,7 +54,9 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp("(bgp (?s ?p ?o))");
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.limitRWs, 1L)
+                .set(RAWConstants.input, new RAWInput());
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -69,7 +74,9 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp("(bgp (?s <http://address> ?o))");
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.limitRWs, 1L)
+                .set(RAWConstants.input, new RAWInput());
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -87,7 +94,9 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp("(bgp (?p <http://own> <http://dog>))");
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.limitRWs, 1L)
+                .set(RAWConstants.input, new RAWInput());
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
@@ -107,7 +116,9 @@ class OpExecutorRAWBGPTest {
         Set<Binding> allBindings = generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, 10000L)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -134,7 +145,9 @@ class OpExecutorRAWBGPTest {
         Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.limitRWs, 1000L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.limitRWs, 1000L)
+                .set(RAWConstants.input, new RAWInput());
         long LIMIT = 1; // only want 1 successful walk
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
@@ -158,7 +171,9 @@ class OpExecutorRAWBGPTest {
 
         final long LIMIT = 1000; // 1000 successful walks
         final long TIMEOUT = 60000; // long timeout of 60s for only 1k random walks
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, TIMEOUT)
+                .set(RAWConstants.input, new RAWInput());
 
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
@@ -187,7 +202,9 @@ class OpExecutorRAWBGPTest {
 
         final long LIMIT = 10000; // successful walks
         final long TIMEOUT = 100; // ms, still too small to go through
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, TIMEOUT)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -217,7 +234,9 @@ class OpExecutorRAWBGPTest {
         final long LIMIT = 1; // successful walks limit will never be reached
         final long TIMEOUT = 100; // ms
         long startExecution = System.currentTimeMillis();
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, TIMEOUT)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -249,7 +268,9 @@ class OpExecutorRAWBGPTest {
 
         long startExecution = System.currentTimeMillis();
         final long LIMIT = 10;
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 60000L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, 60000L)
+                .set(RAWConstants.input, new RAWInput());
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);

@@ -1,4 +1,4 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
 import fr.gdd.sage.arq.IdentifierAllocator;
 import org.apache.jena.atlas.json.JsonArray;

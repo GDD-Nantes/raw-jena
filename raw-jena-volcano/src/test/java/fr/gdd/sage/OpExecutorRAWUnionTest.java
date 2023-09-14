@@ -1,6 +1,8 @@
 package fr.gdd.sage;
 
-import fr.gdd.sage.arq.SageConstants;
+import fr.gdd.raw.QueryEngineRAW;
+import fr.gdd.raw.RAWConstants;
+import fr.gdd.raw.io.RAWInput;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.ext.com.google.common.collect.HashMultiset;
 import org.apache.jena.ext.com.google.common.collect.Multiset;
@@ -13,11 +15,9 @@ import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingRoot;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.sparql.util.Context;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ class OpExecutorRAWUnionTest {
     @BeforeAll
     public static void initializeDB() {
         dataset = new InMemoryInstanceOfTDB2ForRandom().getDataset();
-        dataset.getContext().set(RAWConstants.timeout, 1000L);
+        dataset.getContext().set(RAWConstants.timeout, 1000L).set(RAWConstants.input, new RAWInput());
         QueryEngineRAW.register();
     }
 

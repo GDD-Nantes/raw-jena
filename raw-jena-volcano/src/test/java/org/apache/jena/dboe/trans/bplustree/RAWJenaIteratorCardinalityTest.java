@@ -1,7 +1,7 @@
 package org.apache.jena.dboe.trans.bplustree;
 
-import fr.gdd.sage.OpExecutorRAW;
-import fr.gdd.sage.QueryEngineRAW;
+import fr.gdd.raw.OpExecutorRAW;
+import fr.gdd.raw.QueryEngineRAW;
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import fr.gdd.sage.databases.inmemory.SmallBlocksInMemoryTDB2ForCardinality;
@@ -26,7 +26,6 @@ import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;

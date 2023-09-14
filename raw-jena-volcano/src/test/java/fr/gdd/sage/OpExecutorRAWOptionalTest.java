@@ -1,6 +1,8 @@
 package fr.gdd.sage;
 
-import fr.gdd.sage.arq.SageConstants;
+import fr.gdd.raw.QueryEngineRAW;
+import fr.gdd.raw.RAWConstants;
+import fr.gdd.raw.io.RAWInput;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.ext.com.google.common.collect.HashMultiset;
 import org.apache.jena.ext.com.google.common.collect.Multiset;
@@ -17,7 +19,6 @@ import org.apache.jena.sparql.util.Context;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,9 @@ class OpExecutorRAWOptionalTest {
         Op op = SSE.parseOp(queryAsString);
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 1000L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, 1000L)
+                .set(RAWConstants.input, new RAWInput());
         long LIMIT = 1;
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
@@ -77,7 +80,9 @@ class OpExecutorRAWOptionalTest {
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, 10000L)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -110,7 +115,9 @@ class OpExecutorRAWOptionalTest {
         Set<Binding> allBindings = OpExecutorRAWBGPTest.generateResults(op, dataset);
 
         final long LIMIT = 1000;
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, 10000L);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, 10000L)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
@@ -150,7 +157,9 @@ class OpExecutorRAWOptionalTest {
 
         final long LIMIT = 100;
         final long TIMEOUT = 1000; // 1s
-        Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.timeout, TIMEOUT)
+                .set(RAWConstants.input, new RAWInput());
         op = SSE.parseOp(String.format("(slice _ %s %s)", LIMIT, queryAsString));
         QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
         Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);

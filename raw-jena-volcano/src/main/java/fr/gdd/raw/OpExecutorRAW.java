@@ -1,8 +1,8 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
 import fr.gdd.sage.arq.SageConstants;
-import fr.gdd.sage.io.RAWInput;
-import fr.gdd.sage.io.RAWOutput;
+import fr.gdd.raw.io.RAWInput;
+import fr.gdd.raw.io.RAWOutput;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.engine.ExecutionContext;

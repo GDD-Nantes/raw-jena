@@ -1,7 +1,6 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
-import fr.gdd.sage.RAWConstants;
-import org.apache.jena.base.Sys;
+import fr.gdd.raw.RAWConstants;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFactory;
@@ -30,11 +29,16 @@ public class RAWOutput implements Serializable {
 
     Integer nbScans = 0;
 
-    List<HashMap<Integer, Long>> cardinalities = new ArrayList<>();
+    List<HashMap<Integer, Double>> cardinalities = new ArrayList<>();
     List<Binding> bindings = new ArrayList<>();
     Op plan;
 
+    Integer maxId = 0; // (TODO) better id management to know if RW are going to the end
+    Double wanderJoinCardinality = 0.;
+
     List<String> vars = new ArrayList<>();
+
+    /* ********************************************************************* */
 
     public RAWOutput(Op plan) {
         this.plan = plan;
@@ -57,10 +61,11 @@ public class RAWOutput implements Serializable {
      */
     public void addResultThenClear(HashMap<Integer, RAWJenaIteratorWrapper> iterators) {
         BindingBuilder b = BindingBuilder.create();
-        HashMap<Integer, Long> c = new HashMap<>();
+        HashMap<Integer, Double> c = new HashMap<>();
         double probability = 1.;
         b.add(Var.alloc(RAWConstants.outputProbability.getSymbol()), NodeFactory.createLiteral("0"));
         for (Map.Entry<Integer, RAWJenaIteratorWrapper> kv : iterators.entrySet()) {
+            maxId = Math.max(maxId, kv.getKey());
             b.addAll(kv.getValue().getCurrent());
             c.put(kv.getKey(), kv.getValue().cardinality());
             if (kv.getValue().cardinality() > 0) {
@@ -95,7 +100,7 @@ public class RAWOutput implements Serializable {
         return baos.toString();
     }
 
-    public List<HashMap<Integer, Long>> getCardinalities() {
+    public List<HashMap<Integer, Double>> getCardinalities() {
         return cardinalities;
     }
 
@@ -103,4 +108,21 @@ public class RAWOutput implements Serializable {
         // (TODO) visitor that serializes the plan
         return (new OpSerializeJSON(this.plan)).result;
     }
+
+    public Double getWanderJoinCardinality() {
+        Double avgResult = 0.;
+        for (HashMap<Integer, Double> cardinalityPerIterator : cardinalities) {
+            if (cardinalityPerIterator.containsKey(maxId)) { // (TODO) improve this
+                Double result = 1.;
+                for (Double cardinality : cardinalityPerIterator.values()) {
+                    result *= cardinality;
+                }
+                avgResult += result / ((double) cardinalities.size());
+            }
+        }
+        this.wanderJoinCardinality = avgResult;
+        // System.out.println("avgResult " + avgResult);
+        return avgResult;
+    }
+
 }

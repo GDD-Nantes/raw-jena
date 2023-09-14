@@ -1,9 +1,9 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
-import fr.gdd.sage.arq.IdentifierLinker;
-import fr.gdd.sage.io.RAWInput;
-import fr.gdd.sage.io.RAWOutput;
-import fr.gdd.sage.io.RAWOutputAggregated;
+import fr.gdd.raw.identifiers.IdentifierLinker;
+import fr.gdd.raw.io.RAWInput;
+import fr.gdd.raw.io.RAWOutput;
+import fr.gdd.raw.io.RAWOutputAggregated;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Op;
@@ -76,7 +76,6 @@ public class QueryEngineRAW extends QueryEngineTDB {
             cIter = QueryIteratorTiming.time(cIter);
 
 
-
         return new PreemptRootIter((QueryIterator)cIter, execCxt);
     }
 
@@ -104,20 +103,30 @@ public class QueryEngineRAW extends QueryEngineTDB {
         @Override
         public boolean accept(Op op, DatasetGraph dataset, Context context) {
             // (TODO) onlySELECT ?
-            return isNotInfiniteRandomWalking(context) && super.accept(op, dataset, context);
+            return isNotInfiniteRandomWalking(context) &&
+                    userAsksRAW(context) &&
+                    super.accept(op, dataset, context);
         }
 
         @Override
         public boolean accept(Query query, DatasetGraph dataset, Context context) {
-            return onlySELECT(query) && isNotInfiniteRandomWalking(context) && super.accept(query, dataset, context);
+            return onlySELECT(query) &&
+                    isNotInfiniteRandomWalking(context) &&
+                    userAsksRAW(context) &&
+                    super.accept(query, dataset, context);
         }
 
+        // Security check so users cannot get infinitely running random walks
         private static boolean isNotInfiniteRandomWalking(Context context) {
             return context.isDefined(RAWConstants.limitRWs) || context.isDefined(RAWConstants.timeout);
         }
 
         private static boolean onlySELECT(Query query) {
             return query.isSelectType();
+        }
+
+        private static boolean userAsksRAW(Context context) {
+            return context.isDefined(RAWConstants.input);
         }
     }
 }

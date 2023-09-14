@@ -1,4 +1,4 @@
-package fr.gdd.sage.io;
+package fr.gdd.raw.io;
 
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.shared.PrefixMapping;

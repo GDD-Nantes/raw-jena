@@ -70,33 +70,17 @@ public class RAWJenaIterator implements Iterator<Tuple<NodeId>> {
      */
     public boolean random() {
         // computing random steps from the root to a leaf
-        AccessPath randomPath = wrapped.randomWalk();
-
-        // picking a random record in the leaf's page
-        List<AccessPath.AccessStep> randomSteps = randomPath.getPath();
-
-        AccessPath.AccessStep lastStep = randomSteps.get(randomSteps.size() - 1);
-        RecordBuffer recordBuffer = ((BPTreeRecords) lastStep.page).getRecordBuffer();
-
-        int idxMin = recordBuffer.find(minRecord);
-        int idxMax = recordBuffer.find(maxRecord);
-        
-        idxMin = idxMin < 0 ? -idxMin - 1 : idxMin;
-        idxMax = idxMax < 0 ? -idxMax - 1 : idxMax;
-
-        if (idxMin == idxMax) {
-            return false; // No result for this random step
+        Record currentRecord = wrapped.random();
+        if (Objects.isNull(currentRecord)) {
+            current = null;
+            return false;
+        } else {
+            current = TupleLib.tuple(currentRecord, tupleMap);
+            return true;
         }
-
-        int randomInRecords = (int) (idxMin + Math.random() * (idxMax - idxMin)); // no need for -1 in a `RecordBuffer`
-        Record currentRecord = recordBuffer.get(randomInRecords);
-
-        current = TupleLib.tuple(currentRecord, tupleMap);
-
-        return true;
     }
 
-    public long cardinality(Integer... sample) {
+    public double cardinality(Integer... sample) {
         return wrapped.cardinality(sample);
     }
 

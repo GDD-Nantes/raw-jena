@@ -1,7 +1,5 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
-import fr.gdd.raw.QueryEngineRAW;
-import fr.gdd.raw.RAWConstants;
 import fr.gdd.raw.io.RAWInput;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.query.Dataset;

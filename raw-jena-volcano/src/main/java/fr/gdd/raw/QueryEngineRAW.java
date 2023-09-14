@@ -19,6 +19,11 @@ import org.apache.jena.tdb2.TDB2;
 import org.apache.jena.tdb2.solver.QueryEngineTDB;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 
+/**
+ * The main entry point of RAW. It enables performing random walks on top of TDB2.
+ * It requires that the dataset registers a limit and/or a timeout, and the user
+ * provides a RAWInput.
+ */
 public class QueryEngineRAW extends QueryEngineTDB {
 
     protected QueryEngineRAW(Op op, DatasetGraphTDB dataset, Binding input, Context context) {

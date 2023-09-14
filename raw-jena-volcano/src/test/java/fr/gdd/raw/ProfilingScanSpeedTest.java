@@ -1,6 +1,5 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
-import fr.gdd.raw.RAWConstants;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.sparql.algebra.Op;

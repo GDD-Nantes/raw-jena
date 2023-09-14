@@ -61,6 +61,13 @@ public class IdentifierAllocator extends OpVisitorBase {
     /* ******************************************************************** */
 
     @Override
+    public void visit(OpTable opTable) { // represents VALUES
+        addOp2Ids(opTable, List.of(current));
+        id2Op.put(current, opTable);
+        current += 1;
+    }
+
+    @Override
     public void visit(OpTriple opTriple) {
         addOp2Ids(opTriple, List.of(current));
         id2Op.put(current, opTriple);
@@ -149,6 +156,13 @@ public class IdentifierAllocator extends OpVisitorBase {
         addOp2Ids(opSlice, List.of(current));
         id2Op.put(current, opSlice);
         current += 1;
+    }
+
+    @Override
+    public void visit(OpSequence opSequence) { // sequences link values to the rest of clauses
+        for (int i = 0; i < opSequence.size(); ++i ) {
+            opSequence.get(i).visit(this);
+        }
     }
 
     /* ************************************************************************************ */

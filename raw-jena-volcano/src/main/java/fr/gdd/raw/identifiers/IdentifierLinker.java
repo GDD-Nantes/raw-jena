@@ -9,6 +9,9 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 
 import java.util.*;
 
+/**
+ * Link the identifiers together to retrieve the flow of execution.
+ */
 public class IdentifierLinker extends OpVisitorBase {
 
     HashMap<Integer, Integer> childToParent = new HashMap<>();
@@ -130,6 +133,19 @@ public class IdentifierLinker extends OpVisitorBase {
         List<Integer> quadIds = identifiers.getIds(opQuad);
         for (int i = 0; i < quadIds.size() - 1; ++i) {
             add(quadIds.get(i), quadIds.get(i+1));
+        }
+    }
+
+    @Override
+    public void visit(OpTable opTable) {
+        // probably nothing todo
+    }
+
+    @Override
+    public void visit(OpSequence opSequence) {
+        for (int i = 0; i < opSequence.size(); ++i) {
+            opSequence.get(i).visit(this);
+            // (TODO) probably something clever to do here.
         }
     }
 

@@ -71,8 +71,20 @@ export class PlanView {
             .attr("class", "text_plan card_plan")
             .attr("x", d => d.x + 5)
             .attr("dy", "1.2em")
-            .text(d => "~ " + Number(d.data.cardinality).toLocaleString()  + " elements sampled over " +
-                  Number(d.data.walks).toLocaleString() + " walks");
+            .text(d => "~")
+        text.append("tspan")
+            .attr("class", "text_plan card_plan number_plan")
+            .text(d => Number(d.data.cardinality).toLocaleString());
+        text.append("tspan")
+            .attr("class", "text_plan card_plan")
+            .text(d => " elements sampled over ");
+        text.append("tspan")
+            .attr("class", "text_plan card_plan number_plan")
+            .text(d => Number(d.data.walks).toLocaleString());
+        text.append("tspan")
+            .attr("class", "text_plan card_plan")
+            .text(" walks");
+
         
         ///////////////////////////////////////////////////////////////////
         

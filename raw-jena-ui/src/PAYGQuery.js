@@ -1,3 +1,4 @@
+import {IterativeStats} from "./IterativeStats.js";
 
 /// Pay-as-you-go query just saves the information of a query and merge
 /// the information when possible
@@ -30,6 +31,8 @@ export class PAYGQuery {
             //     ci: 0,
             // }
         ];
+
+        this.iterativeStats = new IterativeStats();
     }
     
     
@@ -39,6 +42,9 @@ export class PAYGQuery {
         if (JSON.stringify(this.plan) !== JSON.stringify(JSON.parse(raw.plan))) { // plan is different, must be a different request
             this.reset();
         }
+        this.iterativeStats.add(raw.cardinalities);
+
+        
         this.plan = JSON.parse(raw.plan);
         this.ids = this.getIds(this.plan);
         
@@ -117,9 +123,10 @@ export class PAYGQuery {
         }
 
         
-        let sum = 0;
+        let sum = 0.;
         for (let i in this.cardinalities) {
-            sum += this.countEstimateOf(this.cardinalities[i], ids)/this.cardinalities.length;
+            let cardOfRW = this.countEstimateOf(this.cardinalities[i], ids)/this.cardinalities.length;
+            sum += cardOfRW;
         }
 
         if (ids === this.ids) {

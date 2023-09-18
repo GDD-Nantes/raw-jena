@@ -1,5 +1,6 @@
 package fr.gdd.sage;
 
+import fr.gdd.raw.RAWConstants;
 import fr.gdd.sage.databases.persistent.Watdiv10M;
 import fr.gdd.sage.fuseki.RAWModule;
 import org.apache.jena.dboe.trans.bplustree.ProgressJenaIterator;
@@ -113,7 +114,12 @@ public class RAWFusekiServer {
     static FusekiServer buildServer(String datasetPath, Dataset dataset, Integer port, String ui) {
         FusekiModules.add(new RAWModule());
 
-        ProgressJenaIterator.NB_WALKS = 5; // (TODO) let it be configurable
+        ProgressJenaIterator.NB_WALKS = 1000; // (TODO) let it be configurable
+
+        // just like public SPARQL endpoints. Put them all to be sure…
+        // ARQ.getContext().set(ARQ.queryTimeout, 60000);
+        // dataset.getContext().set(ARQ.queryTimeout, 60000);
+        // dataset.getContext().set(ARQ.httpQueryTimeout, 60000);
 
         FusekiServer.Builder serverBuilder = FusekiServer.create()
                 // .parseConfigFile("configurations/sage.ttl")
@@ -141,6 +147,7 @@ public class RAWFusekiServer {
         if (Objects.nonNull(ui)) { // add UI if need be
             serverBuilder.staticFileBase(ui);
         }
+
 
         return serverBuilder.build();
 

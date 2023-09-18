@@ -2,10 +2,9 @@ package fr.gdd.sage.writers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.gdd.sage.RAWConstants;
-import fr.gdd.sage.fuseki.SageModule;
-import fr.gdd.sage.io.RAWOutput;
-import fr.gdd.sage.io.RAWOutputAggregated;
+import fr.gdd.raw.RAWConstants;
+import fr.gdd.raw.io.RAWOutput;
+import fr.gdd.raw.io.RAWOutputAggregated;
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.atlas.json.io.JSWriter;
 import org.apache.jena.sparql.util.Context;

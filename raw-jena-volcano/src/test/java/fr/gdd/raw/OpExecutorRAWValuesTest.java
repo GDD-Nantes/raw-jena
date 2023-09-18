@@ -68,4 +68,35 @@ public class OpExecutorRAWValuesTest {
         }
         assertEquals(2, randomSetOfBindings.elementSet().size());
     }
+
+    @Test
+    public void values_in_optionals() {
+        String queryAsString = """
+            SELECT * WHERE {
+                VALUES ?s {<http://Alice> <http://Carol>}
+                ?s <http://address> ?o
+                OPTIONAL {
+                    VALUES ?a {<http://cat>}
+                    ?s ?p ?a.
+                    ?a <http://species> ?sp
+                }
+            } LIMIT 1000""";
+        Query query = QueryFactory.create(queryAsString);
+        Op op = Algebra.compile(query);
+
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), dataset.getContext());
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), dataset.getContext());
+
+        QueryIterator iterator = plan.iterator();
+        Multiset<Binding> randomSetOfBindings = HashMultiset.create();
+        while (iterator.hasNext()) {
+            Binding randomBinding = iterator.next();
+            randomSetOfBindings.add(randomBinding);
+        }
+        assertEquals(1000, randomSetOfBindings.size());
+        for (Binding b : randomSetOfBindings.elementSet()) {
+            log.debug(String.format("Found %s x %s", randomSetOfBindings.count(b), b.toString()));
+        }
+        assertEquals(2, randomSetOfBindings.elementSet().size());
+    }
 }

@@ -1,22 +1,16 @@
 package fr.gdd.sage.fuseki;
 
-import fr.gdd.sage.QueryEngineRAW;
+import fr.gdd.raw.QueryEngineRAW;
 import fr.gdd.sage.arq.QueryEngineSage;
 import fr.gdd.sage.writers.ExtensibleRowSetWriterJSON;
 import fr.gdd.sage.writers.ModuleOutputRegistry;
 import fr.gdd.sage.writers.OutputWriterJSONRAW;
-import fr.gdd.sage.writers.OutputWriterJSONSage;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.sys.FusekiModule;
 import org.apache.jena.fuseki.server.Endpoint;
 import org.apache.jena.fuseki.server.Operation;
-import org.apache.jena.query.ARQ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.jena.riot.rowset.RowSetWriterRegistry;
-import org.apache.jena.sparql.util.Context;
-import org.apache.jena.tdb2.DatabaseMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

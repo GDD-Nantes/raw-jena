@@ -1,7 +1,7 @@
 package fr.gdd.sage.fuseki;
 
-import fr.gdd.sage.RAWConstants;
-import fr.gdd.sage.io.RAWInput;
+import fr.gdd.raw.RAWConstants;
+import fr.gdd.raw.io.RAWInput;
 import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
 
@@ -31,13 +31,20 @@ public class RAW_QueryDataset extends SPARQL_QueryDataset {
             }
         }*/
 
+
+
+
+        RAWInput rawInput = null;
+
         String timeoutFromRequest = getFromBodyOrHeader(RAWConstants.argTimeout, action);
         String limitFromRequest = getFromBodyOrHeader(RAWConstants.argLimitRWs, action);
-        RAWInput rawInput = new RAWInput(
-                Objects.nonNull(timeoutFromRequest) ? Long.parseLong(timeoutFromRequest) : null,
-                Objects.nonNull(limitFromRequest) ? Long.parseLong(limitFromRequest) : null);
 
-        action.getContext().set(RAWConstants.input, rawInput);
+        if (Objects.nonNull(timeoutFromRequest) || Objects.nonNull(limitFromRequest)) {
+            rawInput = new RAWInput(
+                    Objects.nonNull(timeoutFromRequest) ? Long.parseLong(timeoutFromRequest) : null,
+                    Objects.nonNull(limitFromRequest) ? Long.parseLong(limitFromRequest) : null);
+            action.getContext().set(RAWConstants.input, rawInput);
+        }
 
         super.execute(queryString, action);
     }

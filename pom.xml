@@ -13,7 +13,7 @@
 
   <repositories>
     <repository>
-      <id>Sage</id> <!-- to retrieve fr.gdd.sage dependencies -->
+      <id>fr.gdd.sage</id> <!-- to retrieve fr.gdd.sage dependencies -->
       <url>https://maven.pkg.github.com/Chat-Wane/sage-jena</url>
     </repository>
   </repositories>
@@ -24,8 +24,8 @@
       <url>${project.baseUri}</url>
     </site>
     <repository>
-      <id>github</id>
-      <name>GitHub Packages</name>
+      <id>fr.gdd.raw</id>
+      <name>RAW-Jena</name>
       <url>https://maven.pkg.github.com/GDD-Nantes/raw-jena</url>
     </repository>
   </distributionManagement>

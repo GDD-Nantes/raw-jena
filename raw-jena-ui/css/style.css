@@ -165,6 +165,11 @@ svg {
     fill: var(--frost-2);
 }
 
+.number_plan {
+    stroke: var(--aurora-5);
+    fill: var(--aurora-5);
+}
+
 #loop_button {
     width: 20px;
     height:20px;

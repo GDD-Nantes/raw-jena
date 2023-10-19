@@ -1,4 +1,4 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

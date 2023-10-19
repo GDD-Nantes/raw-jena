@@ -1,4 +1,4 @@
-package fr.gdd.sage.fuseki;
+package fr.gdd.raw.fuseki;
 
 import fr.gdd.raw.RAWConstants;
 import fr.gdd.raw.io.RAWInput;

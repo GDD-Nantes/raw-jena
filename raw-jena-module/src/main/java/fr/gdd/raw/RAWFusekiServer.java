@@ -1,8 +1,7 @@
-package fr.gdd.sage;
+package fr.gdd.raw;
 
-import fr.gdd.raw.RAWConstants;
 import fr.gdd.sage.databases.persistent.Watdiv10M;
-import fr.gdd.sage.fuseki.RAWModule;
+import fr.gdd.raw.fuseki.RAWModule;
 import org.apache.jena.dboe.trans.bplustree.ProgressJenaIterator;
 import org.apache.jena.fuseki.auth.Auth;
 import org.apache.jena.fuseki.main.FusekiServer;

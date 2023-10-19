@@ -4,12 +4,14 @@
 Java framework for building Semantic Web and Linked Data
 applications.` It allows users to execute SPARQL queries from start to
 finish (granted they finish before a preset timeout). Unfortunately,
-it lacks of a very useful feature: *sampling*. 
+it lacks of a very useful feature: *sampling* [1].
 
 **RAW ⨯ Jena** fills this gap by performing **RA**ndom **W**alks over
-queries. This enables getting random elements, processing
-aggregations, optimizing join order etc.
+queries, and processing cardinality estimates [2]. This enables
+getting random elements, processing aggregations, optimizing join
+order, building summaries etc.
 
+
 
 ## Usage
 
@@ -42,3 +44,14 @@ npm install --prefix ./raw-jena-ui
 # Serve the Web graphical user interface
 vite ./raw-jena-ui
 ```
+
+
+
+# References
+
+[1] S. Agarwal, H. Milner, A. Kleiner, A. Talwalkar, M. I. Jordan,
+S. Madden, B. Mozafari, I. Stoica, <i>Knowing when you’re wrong:
+Building fast and reliable approximate query processing systems.</i>
+
+[2] F. Li, B. Wu, K. Yi, Z. Zhao, <i>Wander Join and XDB: Online
+Aggregation via Random Walks.</i>

@@ -97,7 +97,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>fr.gdd.sage.RAWFusekiServer</mainClass>
+              <mainClass>fr.gdd.raw.RAWFusekiServer</mainClass>
             </manifest>
           </archive>
         </configuration>

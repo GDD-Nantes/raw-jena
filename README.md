@@ -6,8 +6,8 @@ applications.` It allows users to execute SPARQL queries from start to
 finish (granted they finish before a preset timeout). Unfortunately,
 it lacks of a very useful feature: *sampling* [1].
 
-**RAW ⨯ Jena** fills this gap by performing **RA**ndom **W**alks over
-queries, and processing cardinality estimates [2]. This enables
+**RAW ⨯ Jena** [2] fills this gap by performing **RA**ndom **W**alks over
+queries, and by processing cardinality estimates [3]. This enables
 getting random elements, processing aggregations, optimizing join
 order, building summaries etc.
 
@@ -53,5 +53,9 @@ vite ./raw-jena-ui
 S. Madden, B. Mozafari, I. Stoica, <i>Knowing when you’re wrong:
 Building fast and reliable approximate query processing systems.</i>
 
-[2] F. Li, B. Wu, K. Yi, Z. Zhao, <i>Wander Join and XDB: Online
+[2] J. Aimonier-Davat, M.-H. Dang, P. Molli, B. Nédelec, and
+H. Skaf-Molli, <i>[RAW-JENA: Approximate Query Processing for SPARQL
+Endpoints.](https://hal.science/hal-04250060v1/file/paper.pdf)</i>
+
+[3] F. Li, B. Wu, K. Yi, Z. Zhao, <i>Wander Join and XDB: Online
 Aggregation via Random Walks.</i>

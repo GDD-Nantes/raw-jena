@@ -107,7 +107,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <mainClass>fr.gdd.sage.RAWFusekiServer</mainClass>
+          <mainClass>fr.gdd.raw.RAWFusekiServer</mainClass>
         </configuration>
       </plugin>
       <!-- Tried to shade into one fat jar for docker, but it did not work well.

@@ -14,7 +14,7 @@
   <repositories>
     <repository>
       <id>fr.gdd.sage</id> <!-- to retrieve fr.gdd.sage dependencies -->
-      <url>https://maven.pkg.github.com/Chat-Wane/sage-jena</url>
+      <url>https://chat-wane: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@maven.pkg.github.com/Chat-Wane/sage-jena</url>
     </repository>
   </repositories>
 
@@ -51,9 +51,9 @@
 
     <maven.surefire.version>3.0.0</maven.surefire.version>
     <maven.compiler.version>3.10.1</maven.compiler.version>
-    <maven.compiler.release>20</maven.compiler.release>
-    <maven.compiler.source>20</maven.compiler.source>
-    <maven.compiler.target>20</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
     <maven.javadoc.plugin>3.5.0</maven.javadoc.plugin>
   </properties>
 

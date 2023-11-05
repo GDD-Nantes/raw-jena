@@ -4,7 +4,9 @@ ADD ./ /home/raw/raw-jena/
 
 WORKDIR /home/raw/raw-jena
 
-RUN mvn install -Dmaven.test.skip=true
+## we want to keep settings.xml a secret, so we pass it to maven like this
+## and in the build command: --secret id=maven_settings,src="$HOME/.m2/settings.xml"
+RUN --mount=type=secret,id=maven_settings,dst=/root/.m2/settings.xml mvn install -Dmaven.test.skip=true
 RUN mvn dependency:copy-dependencies
 RUN mvn package -Dmaven.test.skip=true
 

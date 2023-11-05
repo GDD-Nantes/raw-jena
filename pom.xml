@@ -14,7 +14,10 @@
   <repositories>
     <repository>
       <id>fr.gdd.sage</id> <!-- to retrieve fr.gdd.sage dependencies -->
-      <url>https://chat-wane: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@maven.pkg.github.com/Chat-Wane/sage-jena</url>
+      <!-- Since it's a GitHub packages, you need to add credentials in
+           your MAVEN_HOME (eg. ~/.m2/settings.xml) as defined in
+           https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-with-a-personal-access-token -->
+      <url>maven.pkg.github.com/Chat-Wane/sage-jena</url>
     </repository>
   </repositories>
 

@@ -13,6 +13,16 @@ order, building summaries etc.
 
 
 
+## Dependencies and configurations
+
+- Java 21
+- `~/.m2/settings.xml` configured to include
+  `https://maven.pkg.github.com/Chat-Wane/sage-jena`. See an example
+  in [settings.xml](settings.xml). You need to generate
+  [credentials](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages). This requirement is meant to disappear in the future as
+  either we publish on Maven's central repository, or GitHub allows
+  downloading without credentials.
+
 ## Usage
 
 ```bash 

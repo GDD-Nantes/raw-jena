@@ -1,7 +1,11 @@
 import {Plan2Graph} from "./Plan2Graph.js";
 import { translate } from 'sparqlalgebrajs';
 
-// Plugin that prints a SPARQL logical plan as a graph.
+/**
+ * Plugin that prints a SPARQL logical plan as a graph. The
+ * main goal is to have a clear representation of SPARQL
+ * SERVICE queries.
+ */
 export class PlanPlugin {
 
     priority = 10;
@@ -11,11 +15,19 @@ export class PlanPlugin {
         this.yasr = yasr;
     }
 
+    getQueryAsString() {
+        var query = decodeURIComponent(this.yasr.config.getPlainQueryLinkToEndpoint()); // ugly
+        const startOfQuery = query.indexOf("?query=") + 7;
+        return query.substring(startOfQuery, query.length);
+    }    
+
     draw() {
         // #1 create the canvas that will hold the plan
         const div = document.createElement("div");
         div.setAttribute("class", "raw_graph");
 
+        const r = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        r.setAttribute("id", "rootG");
         const n = document.createElementNS("http://www.w3.org/2000/svg", "g");
         n.setAttribute("class", "links");
         const l = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -23,41 +35,20 @@ export class PlanPlugin {
         const t = document.createElementNS("http://www.w3.org/2000/svg", "g");
         t.setAttribute("class", "texts");        
 
-        const canvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        canvas.setAttribute("id", "plan");
-        canvas.setAttribute("viewBox", "0 0 300 300");
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("id", "plan");
+        svg.setAttribute("viewBox", "0 0 300 300");
 
-        canvas.appendChild(l);
-        canvas.appendChild(n);
-        canvas.appendChild(t);
-        div.appendChild(canvas);
+        svg.appendChild(r);
+        r.appendChild(n);
+        r.appendChild(l);
+        r.appendChild(t);
+        div.appendChild(svg);
         this.yasr.resultsEl.appendChild(div);
 
-        const plan = translate(`
-PREFIX wd: <http://wd>
-PREFIX wdt: <http://wdt>
-PREFIX owl: <http://owl>
-PREFIX dbo: <http://dbo>
-
-SELECT * WHERE { {
-   SERVICE <https://query.wikidata.org/sparql> {
-     ?x wdt:P39 wd:Q11696 . #tp1
-     ?x wdt:P102 ?party . } #tp2
-   SERVICE <https://dbpedia.org/sparql> {
-     ?y owl:sameAs ?x . #tp3
-     ?y dbo:predecessor ?predecessor . #tp4
-     ?y dbo:successor ?successor . } #tp5
- } UNION {
-   SERVICE <https://query.wikidata.org/sparql> {
-     ?x wdt:P39 wd:Q11696 . #tp1
-     ?x wdt:P102 ?party .  #tp2
-     ?y owl:sameAs ?x . } #tp3
-   SERVICE <https://dbpedia.org/sparql> {
-     ?y dbo:predecessor ?predecessor . #tp4
-     ?y dbo:successor ?successor . } #tp5
- }
-}
-`);
+        // #2 build the plan
+        const query = this.getQueryAsString();
+        const plan = translate(query);
         console.log(plan);
 
         var visitor = new Plan2Graph();
@@ -86,8 +77,13 @@ SELECT * WHERE { {
                 .join('circle')
                 .attr('r', 5)
                 .attr('fill', d => d.color)
+                .attr('stroke', d => (d.color === "white" && "black") || d.color)
                 .attr('cx', d => d.x)
                 .attr('cy', d => d.y)
+                .call(d3.drag()
+                      .on("start", dragstarted)
+                      .on("drag", dragged)
+                      .on("end", dragended));
         };
 
         function updateTexts() {
@@ -98,11 +94,15 @@ SELECT * WHERE { {
 		.text(d => d.type)
 		.attr('x', d => d.x)
 		.attr('y', d => d.y)
-		.attr('dy', 5)
-                .attr("text-anchor", "middle");
+	        .attr('dy', "0.25em") // vertical centering
+                .attr("text-anchor", "middle")
+                .attr("font-size", d => d.size)
+                .call(d3.drag()
+                      .on("start", dragstarted)
+                      .on("drag", dragged)
+                      .on("end", dragended));
         };
 
-                
         function ticked() {
             updateLinks();
             updateNodes();
@@ -114,10 +114,56 @@ SELECT * WHERE { {
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('link', d3.forceLink().links(links))
             .on('tick', ticked);
+
+
+        // zoom zoom zoom
+        function zoomed({ transform }) {
+            r.setAttribute("transform", transform);
+        }
+        
+        let zoom = d3.zoom().on("zoom", zoomed);        
+        d3.select("#plan").call(zoom);
+
+        // dragable
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("cursor", "grab");
+        svg.appendChild(g);
+
+        function getNode(nodes, id) { // could be more efficient with a map
+            for (var i in nodes) {
+                if (nodes[i].id === id) {
+                    return nodes[i];
+                };
+            };
+        }
+        
+        function dragstarted() {
+            d3.select(this).raise();
+            g.setAttribute("cursor", "grabbing");
+        }
+        
+        function dragged(event, d) {
+            var n = getNode(nodes, d.id);
+            n.x = event.x;
+            n.y = event.y;
+            simulation.alpha(0.1).restart(); 
+        }
+        
+        function dragended() {
+            g.setAttribute("cursor", "grab");
+        }
     }
 
     canHandleResults() {
-        // TODO Check if the plan is valid
+        try {
+            var query = decodeURIComponent(this.yasr.config.getPlainQueryLinkToEndpoint());
+            const startOfQuery = query.indexOf("?query=") + 7;
+            query = query.substring(startOfQuery, query.length);
+            translate(query);
+            // maybe add a "can I visit it" check?
+        } catch (error) {
+            return false;
+        }
         return true;
     }
 

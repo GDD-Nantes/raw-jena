@@ -33,87 +33,72 @@ export class PlanPlugin {
         div.appendChild(canvas);
         this.yasr.resultsEl.appendChild(div);
 
-        const plan = translate('SELECT * WHERE { ?x ?y ?z }');
+        const plan = translate(`
+PREFIX wd: <http://wd>
+PREFIX wdt: <http://wdt>
+PREFIX owl: <http://owl>
+PREFIX dbo: <http://dbo>
+
+SELECT * WHERE { {
+   SERVICE <https://query.wikidata.org/sparql> {
+     ?x wdt:P39 wd:Q11696 . #tp1
+     ?x wdt:P102 ?party . } #tp2
+   SERVICE <https://dbpedia.org/sparql> {
+     ?y owl:sameAs ?x . #tp3
+     ?y dbo:predecessor ?predecessor . #tp4
+     ?y dbo:successor ?successor . } #tp5
+ } UNION {
+   SERVICE <https://query.wikidata.org/sparql> {
+     ?x wdt:P39 wd:Q11696 . #tp1
+     ?x wdt:P102 ?party .  #tp2
+     ?y owl:sameAs ?x . } #tp3
+   SERVICE <https://dbpedia.org/sparql> {
+     ?y dbo:predecessor ?predecessor . #tp4
+     ?y dbo:successor ?successor . } #tp5
+ }
+}
+`);
         console.log(plan);
 
         var visitor = new Plan2Graph();
+        visitor.visit(plan);
+        console.log(visitor);
 
         var width = 300, height = 300
-        var nodes = [{}, {}, {}, {}, {}]
-
-        var links = [
-            {source: 0, target: 1},
-            {source: 0, target: 2},
-            {source: 0, target: 3},
-            {source: 1, target: 0},
-            {source: 3, target: 4},
-            {source: 3, target: 0},
-            {source: 4, target: 0}
-        ];
+        var nodes =  visitor.nodes;
+        var links = visitor.links; 
 
         function updateLinks() {
-	    var u = d3.select('.links')
+	    d3.select('.links')
 		.selectAll('line')
 		.data(links)
 		.join('line')
-		.attr('x1', function(d) {
-		    return d.source.x
-		})
-		.attr('y1', function(d) {
-		    return d.source.y
-		})
-		.attr('x2', function(d) {
-		    return d.target.x
-		})
-		.attr('y2', function(d) {
-		    return d.target.y
-		});
-        }
+		.attr('x1', d => d.source.x)
+		.attr('y1', d => d.source.y)
+		.attr('x2', d => d.target.x)
+		.attr('y2', d => d.target.y)
+        };
         
         function updateNodes() {
-	    var u = d3.select('.nodes')
+	    d3.select('.nodes')
 		.selectAll('circle')
 		.data(nodes)
                 .join('circle')
                 .attr('r', 5)
-                .attr('cx', function(d) {
-                    return d.x
-                })
-                .attr('cy', function(d) {
-                    return d.y
-                })
-	        .join('text')
-		.text(function(d) {
-	            return "Meow" //d.name
-	        })
-		.attr('x', function(d) {
-		    return d.x
-		})
-		.attr('y', function(d) {
-		    return d.y
-		})
-		.attr('dy', function(d) {
-		    return 5
-		})
+                .attr('fill', d => d.color)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
         };
 
         function updateTexts() {
-            var u = d3.select('.texts')
+            d3.select('.texts')
 		.selectAll('text')
 		.data(nodes)
                 .join('text')
-		.text(function(d) {
-	            return "Meow" //d.name
-	        })
-		.attr('x', function(d) {
-		    return d.x
-		})
-		.attr('y', function(d) {
-		    return d.y
-		})
-		.attr('dy', function(d) {
-		    return 5
-		})
+		.text(d => d.type)
+		.attr('x', d => d.x)
+		.attr('y', d => d.y)
+		.attr('dy', 5)
                 .attr("text-anchor", "middle");
         };
 

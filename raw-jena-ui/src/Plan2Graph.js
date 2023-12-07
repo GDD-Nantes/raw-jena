@@ -74,7 +74,7 @@ export class Plan2Graph {
         Object.assign(leftJoinNode, args);
         
         for (var i in children) {
-            this.addLink(leftJoinNode, children[i]);
+            this.addLink(leftJoinNode, children[i], children.length>1 && (parseInt(i)+1));
         };
         return leftJoinNode;
     }
@@ -94,7 +94,7 @@ export class Plan2Graph {
             joinNode.size = "1.5em";
             Object.assign(joinNode, args);
             for (var i in children) {
-                this.addLink(joinNode, children[i]);
+                this.addLink(joinNode, children[i], children.length>1 && (parseInt(i)+1));
             };
             return joinNode;
         } else {
@@ -121,7 +121,7 @@ export class Plan2Graph {
             children.push(this.visit(node.input[i], args));
         }
         for (var i in children) {
-            this.addLink(joinNode, children[i]);
+            this.addLink(joinNode, children[i], children.length>1 && (parseInt(i)+1));
         };
         return joinNode;
     }
@@ -160,8 +160,8 @@ export class Plan2Graph {
 
     visitTerm(term) {
         switch (term.termType) {
-        case "Variable": return "?";//+term.value;
-        case "NamedNode": return "<>";//+term.value+">";
+        case "Variable": return ""; // "?";//+term.value;
+        case "NamedNode": return ""; //  "<>";//+term.value+">";
         default: throw new Error("Type " + node.termType + " not implemented…");
         }
     }
@@ -186,8 +186,8 @@ export class Plan2Graph {
         return this.nodes[this.nodes.length-1];
     }
 
-    addLink(from, to) {
-        this.links.push({source: from, target:to});
+    addLink(from, to, label) {
+        this.links.push(new GraphLink(from, to, label));
     }
 
 }
@@ -202,4 +202,14 @@ class GraphNode {
         this.color = "white";
         this.size = "1em";
     }
+}
+
+class GraphLink {
+
+    constructor(from, to, label) {
+        this.source = from;
+        this.target = to;
+        this.label = label || "";
+    }
+
 }

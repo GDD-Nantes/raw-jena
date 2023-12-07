@@ -48,71 +48,82 @@ export class PlanPlugin {
 
         // #2 build the plan
         const query = this.getQueryAsString();
-        const plan = translate(query);
-        console.log(plan);
+        const plan = translate(query, {sparqlStar: true});
 
         var visitor = new Plan2Graph();
         visitor.visit(plan);
-        console.log(visitor);
 
         var width = 300, height = 300
-        var nodes =  visitor.nodes;
-        var links = visitor.links; 
 
+        var glinks = d3.select('.links')
+	    .selectAll('line')
+	    .data(visitor.links)
+	    .join('line')
+	    .attr('x1', d => d.source.x)
+	    .attr('y1', d => d.source.y)
+	    .attr('x2', d => d.target.x)
+	    .attr('y2', d => d.target.y);
+
+        var glabels = d3.select('.links') // TODO create "G" for lines and labels
+            .selectAll("text")
+            .data(visitor.links)
+            .join("text")
+            .text(d => d.label)
+            .attr("font-size", "0.5em");
+        
         function updateLinks() {
-	    d3.select('.links')
-		.selectAll('line')
-		.data(links)
-		.join('line')
-		.attr('x1', d => d.source.x)
-		.attr('y1', d => d.source.y)
-		.attr('x2', d => d.target.x)
-		.attr('y2', d => d.target.y)
+            glinks.attr('x1', d => d.source.x)
+	        .attr('y1', d => d.source.y)
+	        .attr('x2', d => d.target.x)
+	        .attr('y2', d => d.target.y);
+
+            glabels.attr("x", d => (d.source.x + d.target.x) / 2)
+                .attr("y", d => (d.source.y + d.target.y) / 2)
         };
+
+
+	var gnodes = d3.select('.nodes') // initialize nodes
+            .selectAll('g')
+	    .data(visitor.nodes)
+            .join('g')
+            .attr('x', d => d.x)
+            .attr('y', d => d.y)
+            .attr('id', d => d.id)
+            .call(d3.drag()
+                  .on("start", dragstarted)
+                  .on("drag", dragged)
+                  .on("end", dragended));
+
+        gnodes.append('circle')
+            .attr('r', 5)
+            .attr('fill', d => d.color)
+            .attr('stroke', d => (d.color === "white" && "black") || d.color);
+        
+        gnodes.append('text')
+	    .text(d => d.type)
+	    .attr('dy', "0.25em") // vertical centering
+            .attr("text-anchor", "middle")
+            .attr("font-size", d => d.size);
+        
+
         
         function updateNodes() {
-	    d3.select('.nodes')
-		.selectAll('circle')
-		.data(nodes)
-                .join('circle')
-                .attr('r', 5)
-                .attr('fill', d => d.color)
-                .attr('stroke', d => (d.color === "white" && "black") || d.color)
-                .attr('cx', d => d.x)
-                .attr('cy', d => d.y)
+            gnodes.attr("transform", d => "translate("+d.x+","+d.y+")")
                 .call(d3.drag()
                       .on("start", dragstarted)
                       .on("drag", dragged)
-                      .on("end", dragended));
-        };
-
-        function updateTexts() {
-            d3.select('.texts')
-		.selectAll('text')
-		.data(nodes)
-                .join('text')
-		.text(d => d.type)
-		.attr('x', d => d.x)
-		.attr('y', d => d.y)
-	        .attr('dy', "0.25em") // vertical centering
-                .attr("text-anchor", "middle")
-                .attr("font-size", d => d.size)
-                .call(d3.drag()
-                      .on("start", dragstarted)
-                      .on("drag", dragged)
-                      .on("end", dragended));
+                      .on("end", dragended))
         };
 
         function ticked() {
             updateLinks();
             updateNodes();
-            updateTexts();
         };
         
-        var simulation = d3.forceSimulation(nodes)
+        var simulation = d3.forceSimulation(visitor.nodes)
             .force('charge', d3.forceManyBody())
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('link', d3.forceLink().links(links))
+            .force('link', d3.forceLink().links(visitor.links))
             .on('tick', ticked);
 
 
@@ -143,10 +154,10 @@ export class PlanPlugin {
         }
         
         function dragged(event, d) {
-            var n = getNode(nodes, d.id);
+            var n = getNode(visitor.nodes, d.id);
             n.x = event.x;
             n.y = event.y;
-            simulation.alpha(0.1).restart(); 
+            simulation.alpha(0.05).restart();
         }
         
         function dragended() {
@@ -159,8 +170,8 @@ export class PlanPlugin {
             var query = decodeURIComponent(this.yasr.config.getPlainQueryLinkToEndpoint());
             const startOfQuery = query.indexOf("?query=") + 7;
             query = query.substring(startOfQuery, query.length);
-            translate(query);
-            // maybe add a "can I visit it" check?
+            translate(query, {sparqlStar: true});
+            // TODO maybe add a "can I visit it" check?
         } catch (error) {
             return false;
         }

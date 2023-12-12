@@ -144,12 +144,12 @@ export class Plan2Graph {
             console.log(values.bindings[i]);
             valueToHash += values.bindings[i]["?"+values.variables[0].value].value;
         }
-        console.log(valueToHash);
+        
         var valuesNode = this.addNode("V");
         var args = {color: this.colorHash.hex(valueToHash)};
         Object.assign(valuesNode, args);
         var serviceNode = this.visit(services, args);
-        this.addLink(valuesNode, serviceNode);
+        this.addLink(valuesNode, serviceNode, "x"+values.bindings.length);
         return valuesNode;
     }
     

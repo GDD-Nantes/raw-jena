@@ -25,6 +25,7 @@ export class Plan2Graph {
         case "distinct": return this.visitDistinct(node, args);
         case "orderby" : return this.visitOrderBy(node, args);
 
+        case "values"  : return this.visitValues(node, args);
         case "leftjoin": return this.visitLeftJoin(node, args);
         case "bgp"     : return this.visitBGP(node, args);
         case "filter"  : return this.visitFilter(node, args);
@@ -107,11 +108,19 @@ export class Plan2Graph {
     
     visitService(node, args) {
         // Does not exist has a node by itself, but the coloring
-        // make it exist        
-        return this.visit(node.input, {color: this.colorHash.hex(node.name.value)});
+        // make it exist
+        return this.visit(node.input, {color: (args && args.color) || this.colorHash.hex(node.name.value)});
     }
 
     visitJoin(node, args) {
+        if (node.input.length === 2 &&
+            node.input[0].type === "values" &&
+            node.input[1].type === "service" &&
+            node.input[0].variables[0].value === node.input[1].name.value) {
+            // special kind of join
+            return this.visitValuesOfServices(node, args);
+        };
+        
         var joinNode = this.addNode(this.PRODUCT);
         joinNode.size = "1.5em";
         Object.assign(joinNode, args);
@@ -126,6 +135,25 @@ export class Plan2Graph {
         return joinNode;
     }
 
+    visitValuesOfServices(node, args) {
+        const values = node.input[0];
+        const services = node.input[1];
+        var valueToHash = "";
+        console.log(values.variables);
+        for (var i in values.bindings) {
+            console.log(values.bindings[i]);
+            valueToHash += values.bindings[i]["?"+values.variables[0].value].value;
+        }
+        console.log(valueToHash);
+        var valuesNode = this.addNode("V");
+        var args = {color: this.colorHash.hex(valueToHash)};
+        Object.assign(valuesNode, args);
+        var serviceNode = this.visit(services, args);
+        this.addLink(valuesNode, serviceNode);
+        return valuesNode;
+    }
+    
+
     visitUnion(node, args) {
         var unionNode = this.addNode(this.UNION);
         Object.assign(unionNode, args);
@@ -137,6 +165,10 @@ export class Plan2Graph {
             this.addLink(unionNode, children[i]);
         };
         return unionNode;
+    }
+
+    visitValues(node, args) {
+        return this.addNode("V");
     }
 
     visitTriple(node, args) {

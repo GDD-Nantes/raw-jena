@@ -21,15 +21,7 @@ import java.util.Objects;
  * This is inspired from {@link BPTreeRangeIterator}.
  **/
 public class RAWJenaIterator implements Iterator<Tuple<NodeId>> {
-
-    // wrapped instead of `extends` since they have same function
-    // name `next()` with different return type. Otherwise, could
-    // create constructors for NullIterator and SingletonIterator.
-    // (TODO) think about that.
     private final ProgressJenaIterator wrapped;
-
-    private final Record minRecord;
-    private final Record maxRecord;
 
     private Tuple<NodeId> current;
     private final TupleMap tupleMap;
@@ -38,10 +30,7 @@ public class RAWJenaIterator implements Iterator<Tuple<NodeId>> {
 
     public RAWJenaIterator(PreemptTupleIndexRecord ptir, Record minRec, Record maxRec) {
         this.wrapped = new ProgressJenaIterator(ptir, minRec, maxRec);
-        BPTreeNode root = ptir.bpt.getNodeManager().getRead(ptir.bpt.getRootId());
         this.tupleMap = ptir.tupleMap;
-        this.minRecord = Objects.isNull(minRec) ? root.minRecord() : minRec;
-        this.maxRecord = Objects.isNull(maxRec) ? root.maxRecord() : maxRec;
     }
 
     public boolean hasNext() {
@@ -52,7 +41,6 @@ public class RAWJenaIterator implements Iterator<Tuple<NodeId>> {
             return false;
         }
     }
-
 
     public Tuple<NodeId> next() {
         return current;
@@ -70,7 +58,7 @@ public class RAWJenaIterator implements Iterator<Tuple<NodeId>> {
      */
     public boolean random() {
         // computing random steps from the root to a leaf
-        Record currentRecord = wrapped.random();
+        Record currentRecord = wrapped.getRandom();
         if (Objects.isNull(currentRecord)) {
             current = null;
             return false;

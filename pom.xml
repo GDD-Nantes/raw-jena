@@ -8,7 +8,7 @@
   <groupId>fr.gdd.sage</groupId>
   <artifactId>raw-jena</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>RAndom Walks for Apache Jena.</description>
 
   <repositories>
@@ -45,7 +45,7 @@
      look for sage-jena:pom:${revision} instead of sage-jena:pom:0.0.1 Thus
      fails. Hardcoded version of parent works… -->
     <!-- <revision>0.0.1</revision> -->
-    <sage.version>0.0.1</sage.version>
+    <sage.version>0.0.4</sage.version>
     <junit.version>5.9.2</junit.version>
     <jena.version>4.7.0</jena.version>
     <slf4j.version>2.0.6</slf4j.version>

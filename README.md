@@ -22,6 +22,7 @@ order, building summaries etc.
   [credentials](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages). This requirement is meant to disappear in the future as
   either we publish on Maven's central repository, or GitHub allows
   downloading without credentials.
+  - Alternatively, [clone and install the old way](https://github.com/Chat-Wane/sage-jena#installation).
 
 ## Usage
 

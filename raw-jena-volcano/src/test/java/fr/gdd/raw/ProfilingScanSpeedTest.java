@@ -1,5 +1,6 @@
 package fr.gdd.raw;
 
+import fr.gdd.raw.io.RAWInput;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.sparql.algebra.Op;
@@ -36,35 +37,38 @@ public class ProfilingScanSpeedTest {
     @Disabled
     @Test
     public void test_concurrent_execution_to_profile_perf() throws InterruptedException {
-        Dataset dataset = TDB2Factory.connectDataset("../target/watdiv10M");
+        Dataset dataset = TDB2Factory.connectDataset("../../temp/WDBench");
+        QueryEngineRAW.register();
 
         int numberOfThreads = 1;
         ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        Op op = SSE.parseOp("(bgp (?s <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?o))");
+        // Op op = SSE.parseOp("(bgp (?s <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?o))");
+        Op op = SSE.parseOp("(bgp (?s ?p ?o))");
 
         for (int i = 0; i < numberOfThreads; i++) {
             service.execute(() -> {
                 // final long LIMIT = 10000;
                 final long TIMEOUT = 10000;
-
+                long start = System.currentTimeMillis();
                 dataset.begin(ReadWrite.READ);
                 // Context c = dataset.getContext().copy().set(SageConstants.limit, LIMIT);
-                Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT);
+                Context c = dataset.getContext().copy().set(RAWConstants.timeout, TIMEOUT)
+                        .set(RAWConstants.input, new RAWInput());
                 QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
                 Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
 
                 QueryIterator iterator = plan.iterator();
                 long sum = 0;
-                Set<Binding> randomSetOfBindings = new HashSet<>();
+                //Set<Binding> randomSetOfBindings = new HashSet<>();
                 while (iterator.hasNext()) {
                     Binding randomBinding = iterator.next();
-                    randomSetOfBindings.add(randomBinding);
+                    //randomSetOfBindings.add(randomBinding);
                     sum += 1;
                 }
                 // assertEquals(LIMIT, sum);
-
-                log.info("Number of random walks performed by a thread: {}", sum);
+                long elapsed = System.currentTimeMillis() - start;
+                log.info("{}ms for {} RWs  ({} RW/s)", elapsed, sum, (double)sum/(double)elapsed*1000.);
                 latch.countDown();
             });
         }

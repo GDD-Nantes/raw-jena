@@ -113,7 +113,9 @@ public class RAWFusekiServer {
     static FusekiServer buildServer(String datasetPath, Dataset dataset, Integer port, String ui) {
         FusekiModules.add(new RAWModule());
 
-        ProgressJenaIterator.NB_WALKS = 1000; // (TODO) let it be configurable
+        // (TODO) let it be configurable
+        // (TODO) when 0, it disables detailed outputs about cardinality and such.
+        ProgressJenaIterator.NB_WALKS = 10;
 
         // just like public SPARQL endpoints. Put them all to be sure…
         // ARQ.getContext().set(ARQ.queryTimeout, 60000);

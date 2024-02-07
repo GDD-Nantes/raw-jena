@@ -66,6 +66,8 @@ public class RAWOutput implements Serializable {
         b.add(Var.alloc(RAWConstants.outputProbability.getSymbol()), NodeFactory.createLiteral("0"));
         for (Map.Entry<Integer, RAWJenaIteratorWrapper> kv : iterators.entrySet()) {
             maxId = Math.max(maxId, kv.getKey());
+            // TODO this is very costly and should be executed on demand instead of always
+            // TODO clearly visible if you profile the speed of scans
             b.addAll(kv.getValue().getCurrent());
             c.put(kv.getKey(), kv.getValue().cardinality());
             if (kv.getValue().cardinality() > 0) {

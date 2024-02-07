@@ -3,6 +3,9 @@ package fr.gdd.raw;
 import fr.gdd.raw.io.RAWInput;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.Plan;
 import org.apache.jena.sparql.engine.QueryEngineFactory;
@@ -65,6 +68,31 @@ class OpExecutorRAWBGPTest {
             sum += 1;
         }
         assertEquals(1, sum);
+    }
+
+    @Test
+    public void get_random_from_spo_with_limit() {
+        Query query = QueryFactory.create("SELECT * WHERE {?s ?p ?o} LIMIT 20");
+
+        Op op = Algebra.compile(query);
+        System.out.println(op);
+        Set<Binding> allBindings = generateResults(op, dataset);
+
+        Context c = dataset.getContext().copy()
+                .set(RAWConstants.limitRWs, 100L)
+                .set(RAWConstants.input, new RAWInput());
+        QueryEngineFactory factory = QueryEngineRegistry.findFactory(op, dataset.asDatasetGraph(), c);
+        Plan plan = factory.create(op, dataset.asDatasetGraph(), BindingRoot.create(), c);
+
+        QueryIterator iterator = plan.iterator();
+        long sum = 0;
+        while (iterator.hasNext()) {
+            Binding binding = iterator.next();
+            System.out.println(binding);
+            assertTrue(allBindings.contains(binding));
+            sum += 1;
+        }
+        assertEquals(20, sum);
     }
 
     @Test

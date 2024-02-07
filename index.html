@@ -9,6 +9,7 @@
     <script type="module" src="./node_modules/chart.js/dist/chart.umd.js"></script>
     <script type="module" src="./src/PAYGQuery.js"></script>
     <script type="module" src="./src/RAWPlugin.js"></script>
+    <script type="module" src="./src/PlanPlugin.js"></script>
     <script type="module" src="./src/PlanView.js"></script>
     <script type="module" src="./src/QueryExamples.js"></script>
     <script type="module" src="./src/CardinalityGraph.js"></script>
@@ -63,6 +64,9 @@
       Yasr.registerPlugin("RAW", RAWPlugin); // registering of plugins must be done before Yasgui() ofc.
       Yasr.defaults.persistencyExpire = 0;
       
+      import {PlanPlugin} from "./src/PlanPlugin.js";
+      Yasr.registerPlugin("Plan", PlanPlugin); // registering of plugins must be done before Yasgui() ofc.
+      
       const yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: {
               // endpoint: "http://localhost:8080/watdiv10M",
@@ -114,8 +118,6 @@
           yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + (yasr.plugins["RAW"].payg.nbTimes > 1 ? " iterations)" : " iteration)");
       };
 
-      console.log(yasqe);
-      
     </script>
   </body>
 

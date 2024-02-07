@@ -131,6 +131,7 @@ html, body {
 .raw_graph {
     border: solid 1px var(--frost-4);
     height: 100%;
+    min-height: 300px;
 }
 
 

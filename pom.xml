@@ -36,6 +36,7 @@
   <modules>
     <module>raw-jena-volcano</module>
     <module>raw-jena-module</module>
+    <module>rawer</module>
   </modules>
 
   <properties>
@@ -77,6 +78,11 @@
       <!-- sage dependencies -->
       <dependency>
         <groupId>fr.gdd.sage</groupId>
+        <artifactId>jena-utils</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
         <artifactId>sage-commons</artifactId>
         <version>${sage.version}</version>
       </dependency>
@@ -98,6 +104,11 @@
       <dependency>
         <groupId>fr.gdd.sage</groupId>
         <artifactId>sage-jena-module</artifactId>
+        <version>${sage.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.gdd.sage</groupId>
+        <artifactId>sager</artifactId>
         <version>${sage.version}</version>
       </dependency>
 

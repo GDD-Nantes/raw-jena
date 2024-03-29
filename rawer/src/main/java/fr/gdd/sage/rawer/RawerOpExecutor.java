@@ -19,6 +19,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIterAssign;
+import org.apache.jena.sparql.engine.iterator.QueryIterGroup;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.expr.aggregate.AggCount;
 
@@ -93,6 +94,10 @@ public class RawerOpExecutor extends ReturningArgsOpVisitor<Iterator<BindingId2V
 
     @Override
     public Iterator<BindingId2Value> visit(OpGroup groupBy, Iterator<BindingId2Value> input) {
+        // QueryIterator qIter = exec(opGroup.getSubOp(), input);
+        // qIter = new QueryIterGroup(qIter, opGroup.getGroupVars(), opGroup.getAggregators(), execCxt);
+        // return qIter;
+
         // groupVars = Empty
         // aggregators = List [AggCount (count *), var ?.0, exprvar ?.0]
         switch (groupBy.getAggregators().get(0).getAggregator()) { // TODO handle the list.

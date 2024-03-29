@@ -4,6 +4,7 @@ import fr.gdd.jena.visitors.ReturningArgsOpVisitor;
 import fr.gdd.jena.visitors.ReturningArgsOpVisitorRouter;
 import fr.gdd.jena.visitors.ReturningOpVisitorRouter;
 import fr.gdd.sage.jena.JenaBackend;
+import fr.gdd.sage.rawer.accumulators.ApproximateAggCount;
 import fr.gdd.sage.rawer.iterators.ProjectIterator;
 import fr.gdd.sage.rawer.iterators.RandomRoot;
 import fr.gdd.sage.rawer.iterators.RandomScanFactory;
@@ -21,6 +22,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIterAssign;
 import org.apache.jena.sparql.engine.iterator.QueryIterGroup;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
+import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.aggregate.AggCount;
 
 import java.util.Iterator;
@@ -40,6 +42,7 @@ public class RawerOpExecutor extends ReturningArgsOpVisitor<Iterator<BindingId2V
         execCxt.getContext().setIfUndef(RawerConstants.BACKEND, new JenaBackend(execCxt.getDataset()));
         backend = execCxt.getContext().get(RawerConstants.BACKEND);
         execCxt.getContext().setIfUndef(SagerConstants.BACKEND, backend);
+        execCxt.getContext().setIfUndef(RawerConstants.SCANS, 0L);
     }
 
     public RawerOpExecutor setTimeout(Long timeout) {
@@ -57,7 +60,8 @@ public class RawerOpExecutor extends ReturningArgsOpVisitor<Iterator<BindingId2V
     public QueryIterator execute(Op root) {
         root = ReturningOpVisitorRouter.visit(new BGP2Triples(), root); // TODO fix
         execCxt.getContext().set(SagerConstants.SAVER, new Save2SPARQL(root, execCxt));
-        Iterator<BindingId2Value> wrapped = new RandomRoot(this, execCxt, root);
+        // Iterator<BindingId2Value> wrapped = new RandomRoot(this, execCxt, root);
+        Iterator<BindingId2Value> wrapped = ReturningArgsOpVisitorRouter.visit(this, root, Iter.of(new BindingId2Value()));
         return biv2qi(wrapped, execCxt);
     }
 
@@ -97,15 +101,19 @@ public class RawerOpExecutor extends ReturningArgsOpVisitor<Iterator<BindingId2V
         // QueryIterator qIter = exec(opGroup.getSubOp(), input);
         // qIter = new QueryIterGroup(qIter, opGroup.getGroupVars(), opGroup.getAggregators(), execCxt);
         // return qIter;
-
-        // groupVars = Empty
-        // aggregators = List [AggCount (count *), var ?.0, exprvar ?.0]
-        switch (groupBy.getAggregators().get(0).getAggregator()) { // TODO handle the list.
-            case AggCount a -> {System.out.println("TODO");}
-            default -> throw new UnsupportedOperationException("TODO Aggregator "+
-                    groupBy.getAggregators().get(0).getAggregator());
+        if (groupBy.getAggregators().stream().anyMatch(a -> !(a.getAggregator() instanceof AggCount))) {
+            throw new UnsupportedOperationException("An aggregation function is not implemented.");
         }
-        return super.visit(groupBy, input);
+        for (int i = 0; i < groupBy.getAggregators().size(); ++i){
+            if (groupBy.getAggregators().get(i).getAggregator() instanceof AggCount) {
+                groupBy.getAggregators().set(i, new ExprAggregator(groupBy.getAggregators().get(i).getVar(), new ApproximateAggCount(execCxt, groupBy.getSubOp())));
+            }
+        }
+
+        //vv wrapped = ReturningArgsOpVisitorRouter.visit(this, groupBy.getSubOp(), input);
+        Iterator<BindingId2Value> wrapped = new RandomRoot(this, execCxt, groupBy.getSubOp());
+        return  qi2biv(new QueryIterGroup(biv2qi(wrapped, execCxt),
+                groupBy.getGroupVars(), groupBy.getAggregators(), execCxt), backend);
     }
 
     /* ****************************************************************** */

@@ -11,6 +11,7 @@ public class RawerConstants {
     static public final Symbol TIMEOUT = allocConstantSymbol("Timeout");
     static public final Symbol DEADLINE = allocConstantSymbol("Deadline");
     static public final Symbol LIMIT = allocConstantSymbol("Limit");
+    static public final Symbol SCANS = allocConstantSymbol("Scans");
 
     /**
      * Symbol in use in the global context.

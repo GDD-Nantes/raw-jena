@@ -17,6 +17,7 @@ public class RandomRoot implements Iterator<BindingId2Value> {
     final Long deadline;
     final Op op;
     final RawerOpExecutor executor;
+    final ExecutionContext context;
 
     Long count = 0L;
     Iterator<BindingId2Value> current;
@@ -26,6 +27,7 @@ public class RandomRoot implements Iterator<BindingId2Value> {
         this.deadline = context.getContext().get(RawerConstants.DEADLINE, Long.MAX_VALUE);
         this.executor = executor;
         this.op = op;
+        this.context = context;
     }
 
     @Override
@@ -41,7 +43,9 @@ public class RandomRoot implements Iterator<BindingId2Value> {
     }
 
     private boolean shouldStop() {
-        return System.currentTimeMillis() > deadline || count >= limit;
+        return System.currentTimeMillis() > deadline ||
+                count >= limit ||
+                context.getContext().getLong(RawerConstants.SCANS, 0L) >= limit;
     }
 
     @Override

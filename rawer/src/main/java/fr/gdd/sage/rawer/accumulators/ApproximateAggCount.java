@@ -1,5 +1,8 @@
 package fr.gdd.sage.rawer.accumulators;
 
+import fr.gdd.jena.visitors.ReturningOpVisitorRouter;
+import fr.gdd.sage.sager.SagerConstants;
+import fr.gdd.sage.sager.pause.Save2SPARQL;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -37,20 +40,24 @@ public class ApproximateAggCount extends AggCount {
         Double numberOfRWs = 0.;
         Double sumOfProba = 0.;
 
+        WanderJoinVisitor wj;
 
         public ApproximateAccCount(ExecutionContext context, Op subOp) {
             this.context = context;
             this.op = subOp;
+            Save2SPARQL saver = context.getContext().get(SagerConstants.SAVER);
+            this.wj = new WanderJoinVisitor(saver.getOp2it());
         }
 
         @Override
         public void accumulate(Binding binding, FunctionEnv functionEnv) {
-            // TODO
+            sumOfProba += 1./ReturningOpVisitorRouter.visit(wj, op);
+            numberOfRWs += 1;
         }
 
         @Override
         public NodeValue getValue() {
-            return NodeValue.makeDouble(numberOfRWs/sumOfProba);
+            return NodeValue.makeDouble(sumOfProba == 0. ? 0. : sumOfProba/numberOfRWs);
         }
     }
 }

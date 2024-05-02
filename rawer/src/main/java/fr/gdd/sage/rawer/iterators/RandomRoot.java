@@ -21,6 +21,7 @@ public class RandomRoot implements Iterator<BindingId2Value> {
 
     Long count = 0L;
     Iterator<BindingId2Value> current;
+    BindingId2Value produced;
 
     public RandomRoot(RawerOpExecutor executor, ExecutionContext context, Op op) {
         this.limit = context.getContext().get(RawerConstants.LIMIT, Long.MAX_VALUE);
@@ -32,11 +33,15 @@ public class RandomRoot implements Iterator<BindingId2Value> {
 
     @Override
     public boolean hasNext() {
-        current = null;
-        while (Objects.isNull(current) || !current.hasNext()) {
-            current = ReturningArgsOpVisitorRouter.visit(this.executor, this.op, Iter.of(new BindingId2Value()));
+        while (Objects.isNull(produced)) {
             if (shouldStop()) {
                 return false;
+            }
+            // TODO input as Iterator<BindingId2Value>
+            if (Objects.nonNull(current) && current.hasNext()) {
+                produced = current.next();
+            } else {
+                current = ReturningArgsOpVisitorRouter.visit(this.executor, this.op, Iter.of(new BindingId2Value()));
             }
         }
         return true;
@@ -51,6 +56,8 @@ public class RandomRoot implements Iterator<BindingId2Value> {
     @Override
     public BindingId2Value next() {
         ++count;
-        return current.next();
+        BindingId2Value toReturn = produced; // ugly :(
+        produced = null;
+        return toReturn;
     }
 }

@@ -45,6 +45,18 @@ public class RawerOpExecutorTest {
         execute(queryAsString, dataset.getDataset(), 10L);
     }
 
+    @Test
+    public void count_with_group_on_simple_tp () {
+        String queryAsString = "SELECT (COUNT(*) AS ?c) ?p WHERE {?s ?p ?o} GROUP BY ?p";
+        execute(queryAsString, dataset.getDataset(), 10L);
+    }
+
+    @Test
+    public void count_distinct_of_simple_triple_pattern () {
+        String queryAsString = "SELECT (COUNT(DISTINCT *) AS ?c) WHERE {?s ?p ?o}";
+        execute(queryAsString, dataset.getDataset(), 10L);
+    }
+
     /* ************************************************************* */
 
     public static void execute(String queryAsString, Dataset dataset, Long limit) {

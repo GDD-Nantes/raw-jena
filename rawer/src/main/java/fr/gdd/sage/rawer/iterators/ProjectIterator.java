@@ -5,6 +5,7 @@ import org.apache.jena.sparql.algebra.op.OpProject;
 import org.apache.jena.sparql.core.Var;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Probably will be part of sage instead of this. Because there are no specificities.
@@ -31,7 +32,9 @@ public class ProjectIterator implements Iterator<BindingId2Value> {
         BindingId2Value current = wrapped.next();
         for (Var v : this.project.getVars()) {
             BindingId2Value.IdValueTable forV = current.getIdValueTable(v);
-            b2v.put(v, forV.getId(), forV.getTable());
+            if (Objects.nonNull(forV)) {
+                b2v.put(v, forV.getId(), forV.getTable());
+            }
         }
         return b2v;
     }

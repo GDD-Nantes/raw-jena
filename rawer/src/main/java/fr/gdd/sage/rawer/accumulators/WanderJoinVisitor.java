@@ -12,6 +12,7 @@ import java.util.Iterator;
 
 /**
  * Process the probability of having retrieved the last random walk.
+ * TODO add the possibility to bind some variables to change the probabilities
  */
 public class WanderJoinVisitor extends ReturningOpVisitor<Double> {
 

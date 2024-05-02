@@ -5,6 +5,7 @@ import fr.gdd.jena.visitors.ReturningArgsOpVisitorRouter;
 import fr.gdd.jena.visitors.ReturningOpVisitorRouter;
 import fr.gdd.sage.jena.JenaBackend;
 import fr.gdd.sage.rawer.accumulators.ApproximateAggCount;
+import fr.gdd.sage.rawer.accumulators.ApproximateAggCountDistinct;
 import fr.gdd.sage.rawer.iterators.ProjectIterator;
 import fr.gdd.sage.rawer.iterators.RandomRoot;
 import fr.gdd.sage.rawer.iterators.RandomScanFactory;
@@ -24,6 +25,7 @@ import org.apache.jena.sparql.engine.iterator.QueryIterGroup;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.aggregate.AggCount;
+import org.apache.jena.sparql.expr.aggregate.AggCountDistinct;
 
 import java.util.Iterator;
 
@@ -60,8 +62,8 @@ public class RawerOpExecutor extends ReturningArgsOpVisitor<Iterator<BindingId2V
     public QueryIterator execute(Op root) {
         root = ReturningOpVisitorRouter.visit(new BGP2Triples(), root); // TODO fix
         execCxt.getContext().set(SagerConstants.SAVER, new Save2SPARQL(root, execCxt));
-        // Iterator<BindingId2Value> wrapped = new RandomRoot(this, execCxt, root);
-        Iterator<BindingId2Value> wrapped = ReturningArgsOpVisitorRouter.visit(this, root, Iter.of(new BindingId2Value()));
+        Iterator<BindingId2Value> wrapped = new RandomRoot(this, execCxt, root);
+        // Iterator<BindingId2Value> wrapped = ReturningArgsOpVisitorRouter.visit(this, root, Iter.of(new BindingId2Value()));
         return biv2qi(wrapped, execCxt);
     }
 
@@ -98,15 +100,22 @@ public class RawerOpExecutor extends ReturningArgsOpVisitor<Iterator<BindingId2V
 
     @Override
     public Iterator<BindingId2Value> visit(OpGroup groupBy, Iterator<BindingId2Value> input) {
-        // QueryIterator qIter = exec(opGroup.getSubOp(), input);
-        // qIter = new QueryIterGroup(qIter, opGroup.getGroupVars(), opGroup.getAggregators(), execCxt);
-        // return qIter;
-        if (groupBy.getAggregators().stream().anyMatch(a -> !(a.getAggregator() instanceof AggCount))) {
-            throw new UnsupportedOperationException("An aggregation function is not implemented.");
+        Long limit = execCxt.getContext().getLong(RawerConstants.LIMIT, 0L);
+        if (limit <= 0L) {
+            return input;
         }
-        for (int i = 0; i < groupBy.getAggregators().size(); ++i){
-            if (groupBy.getAggregators().get(i).getAggregator() instanceof AggCount) {
-                groupBy.getAggregators().set(i, new ExprAggregator(groupBy.getAggregators().get(i).getVar(), new ApproximateAggCount(execCxt, groupBy.getSubOp())));
+
+        // execCxt.getContext().set(RawerConstants.LIMIT, (long) limit/2);
+        for (int i = 0; i < groupBy.getAggregators().size(); ++i) {
+            switch (groupBy.getAggregators().get(i).getAggregator()) {
+                case AggCount ac -> groupBy.getAggregators().set(i,
+                        new ExprAggregator(groupBy.getAggregators().get(i).getVar(),
+                            new ApproximateAggCount(execCxt, groupBy.getSubOp())));
+                case AggCountDistinct acd -> groupBy.getAggregators().set(i,
+                        new ExprAggregator(groupBy.getAggregators().get(i).getVar(),
+                            new ApproximateAggCountDistinct(execCxt, groupBy.getSubOp())));
+                default -> throw new UnsupportedOperationException("The aggregation function is not implemented: " +
+                        groupBy.getAggregators().get(i).toString());
             }
         }
 

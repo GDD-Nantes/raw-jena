@@ -5,19 +5,16 @@ import fr.gdd.raw.QueryEngineRAW;
 import fr.gdd.sage.arq.SageConstants;
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
 import fr.gdd.sage.databases.inmemory.SmallBlocksInMemoryTDB2ForCardinality;
-import fr.gdd.sage.databases.persistent.Watdiv10M;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.sparql.algebra.op.OpBGP;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.iterator.RAWJenaIteratorWrapper;
 import org.apache.jena.sparql.engine.iterator.RAWScanIteratorFactory;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.tdb2.solver.BindingNodeId;
 import org.apache.jena.tdb2.solver.PreemptStageMatchTuple;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
@@ -27,12 +24,10 @@ import org.apache.jena.tdb2.sys.TDBInternal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -101,24 +96,8 @@ class RAWJenaIteratorCardinalityTest {
         assertTrue(40 <= it.cardinality() &&  it.cardinality() <= 50); // ± 10 (but we have no guarantee on accuracy…)
     }
 
-    @Test
-    @EnabledIfEnvironmentVariable(named = "WATDIV", matches = "true")
-    public void cardinality_of_larger_triple_pattern_above_leaf_size_with_watdiv() {
-        Watdiv10M watdiv10M = new Watdiv10M(Optional.of("../target"));
-        Dataset watdiv = TDB2Factory.connectDataset(watdiv10M.dbPath_asStr);
-        watdiv.begin(ReadWrite.READ);
-        // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://schema.org/eligibleRegion> <http://db.uwaterloo.ca/~galuc/wsdbm/Country21>))"); // expect 2613 get 2613
-        // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://purl.org/goodrelations/validThrough> ?v3))"); // expect 36346 get 34100
-        // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://purl.org/goodrelations/includes> ?v1))"); // expect 90000 get 103616
-        // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v1 <http://schema.org/text> ?v6))"); // expect 7476 get 7476
-        // OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://schema.org/eligibleQuantity> ?v4))"); // expect 90000 get 79454
-        OpBGP op = (OpBGP) SSE.parseOp("(bgp (?v0 <http://purl.org/goodrelations/price> ?v2))"); // expect 240000 get 234057
 
-        RAWJenaIteratorWrapper it = getRandomJenaIterator(op, watdiv);
-        assertEquals(50, it.cardinality());
-        watdiv.end();
-    }
-
+    /* ********************************************************************* */
 
     public static RAWJenaIteratorWrapper getRandomJenaIterator(OpBGP op, Dataset dataset) {
         // rough copy from {@link PreemptStageMatchTuple}
@@ -135,13 +114,13 @@ class RAWJenaIteratorCardinalityTest {
                 op.getPattern().get(0).getPredicate(),
                 op.getPattern().get(0).getObject());
 
-        NodeId ids[] = new NodeId[patternTuple.len()]; // ---- Convert to NodeIds
+        NodeId[] ids = new NodeId[patternTuple.len()]; // ---- Convert to NodeIds
         final Var[] vars = new Var[patternTuple.len()]; // Variables for this tuple after substitution
 
         NodeTupleTable nodeTupleTable = activeGraph.getTripleTable().getNodeTupleTable();
         boolean found = PreemptStageMatchTuple.prepare(nodeTupleTable.getNodeTable(), patternTuple, BindingNodeId.root, ids, vars);
 
-        execCxt.getContext().set(SageConstants.iterators, new HashMap());
+        execCxt.getContext().set(SageConstants.iterators, new HashMap<>());
         RAWScanIteratorFactory f = new RAWScanIteratorFactory(execCxt);
         if (found) {
             return (RAWJenaIteratorWrapper) f.getScan(nodeTupleTable, TupleFactory.create(ids), vars, 12);

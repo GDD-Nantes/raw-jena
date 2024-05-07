@@ -40,7 +40,7 @@ public class RandomScanFactory<ID, VALUE> implements Iterator<BackendBindings<ID
             inputBinding = input.next();
             Tuple3<ID> spo = substitute(triple.getTriple(), inputBinding);
 
-            instantiated = new RandomScan(context, triple, spo);
+            instantiated = new RandomScan<>(context, triple, spo);
         }
 
         return instantiated.hasNext();

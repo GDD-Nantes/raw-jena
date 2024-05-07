@@ -66,7 +66,7 @@ public class RawerOpExecutor<ID, VALUE> extends ReturningArgsOpVisitor<
 
     @Override
     public Iterator<BackendBindings<ID, VALUE>> visit(OpProject project, Iterator<BackendBindings<ID, VALUE>> input) {
-        return new ProjectIterator(project, ReturningArgsOpVisitorRouter.visit(this, project.getSubOp(), input));
+        return new ProjectIterator<>(project, ReturningArgsOpVisitorRouter.visit(this, project.getSubOp(), input));
     }
 
 

@@ -1,6 +1,6 @@
 package fr.gdd.sage.rawer.iterators;
 
-import fr.gdd.sage.sager.BindingId2Value;
+import fr.gdd.sage.generics.BackendBindings;
 import org.apache.jena.sparql.algebra.op.OpProject;
 import org.apache.jena.sparql.core.Var;
 
@@ -11,12 +11,12 @@ import java.util.Objects;
  * Probably will be part of sage instead of this. Because there are no specificities.
  * It filters out the bindings based on targeted variables.
  */
-public class ProjectIterator implements Iterator<BindingId2Value> {
+public class ProjectIterator<ID, VALUE> implements Iterator<BackendBindings<ID, VALUE>> {
 
-    final Iterator<BindingId2Value> wrapped;
+    final Iterator<BackendBindings<ID, VALUE>> wrapped;
     final OpProject project;
 
-    public ProjectIterator(OpProject project, Iterator<BindingId2Value> wrapped) {
+    public ProjectIterator(OpProject project, Iterator<BackendBindings<ID, VALUE>> wrapped) {
         this.wrapped = wrapped;
         this.project = project;
     }
@@ -27,13 +27,13 @@ public class ProjectIterator implements Iterator<BindingId2Value> {
     }
 
     @Override
-    public BindingId2Value next() {
-        BindingId2Value b2v = new BindingId2Value();
-        BindingId2Value current = wrapped.next();
+    public BackendBindings<ID, VALUE> next() {
+        BackendBindings<ID, VALUE> b2v = new BackendBindings<>();
+        BackendBindings<ID, VALUE> current = wrapped.next();
         for (Var v : this.project.getVars()) {
-            BindingId2Value.IdValueTable forV = current.getIdValueTable(v);
+            BackendBindings.IdValueBackend<ID, VALUE> forV = current.get(v);
             if (Objects.nonNull(forV)) {
-                b2v.put(v, forV.getId(), forV.getTable());
+                b2v.put(v, forV);
             }
         }
         return b2v;

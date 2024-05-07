@@ -1,9 +1,9 @@
 package fr.gdd.sage.rawer.iterators;
 
 import fr.gdd.jena.visitors.ReturningArgsOpVisitorRouter;
+import fr.gdd.sage.generics.BackendBindings;
 import fr.gdd.sage.rawer.RawerConstants;
 import fr.gdd.sage.rawer.RawerOpExecutor;
-import fr.gdd.sage.sager.BindingId2Value;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
@@ -11,19 +11,23 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import java.util.Iterator;
 import java.util.Objects;
 
-public class RandomRoot implements Iterator<BindingId2Value> {
+/**
+ * Iterator in charge of checking some stopping conditions, e.g., the execution
+ * time reached the timeout.
+ */
+public class RandomRoot<ID, VALUE> implements Iterator<BackendBindings<ID, VALUE>> {
 
     final Long limit;
     final Long deadline;
     final Op op;
-    final RawerOpExecutor executor;
+    final RawerOpExecutor<ID, VALUE> executor;
     final ExecutionContext context;
 
     Long count = 0L;
-    Iterator<BindingId2Value> current;
-    BindingId2Value produced;
+    Iterator<BackendBindings<ID, VALUE>> current;
+    BackendBindings<ID, VALUE> produced;
 
-    public RandomRoot(RawerOpExecutor executor, ExecutionContext context, Op op) {
+    public RandomRoot(RawerOpExecutor<ID, VALUE> executor, ExecutionContext context, Op op) {
         this.limit = context.getContext().get(RawerConstants.LIMIT, Long.MAX_VALUE);
         this.deadline = context.getContext().get(RawerConstants.DEADLINE, Long.MAX_VALUE);
         this.executor = executor;
@@ -41,7 +45,7 @@ public class RandomRoot implements Iterator<BindingId2Value> {
             if (Objects.nonNull(current) && current.hasNext()) {
                 produced = current.next();
             } else {
-                current = ReturningArgsOpVisitorRouter.visit(this.executor, this.op, Iter.of(new BindingId2Value()));
+                current = ReturningArgsOpVisitorRouter.visit(this.executor, this.op, Iter.of(new BackendBindings<>()));
             }
         }
         return true;
@@ -54,9 +58,9 @@ public class RandomRoot implements Iterator<BindingId2Value> {
     }
 
     @Override
-    public BindingId2Value next() {
+    public BackendBindings<ID, VALUE> next() {
         ++count;
-        BindingId2Value toReturn = produced; // ugly :(
+        BackendBindings<ID, VALUE> toReturn = produced; // ugly :(
         produced = null;
         return toReturn;
     }

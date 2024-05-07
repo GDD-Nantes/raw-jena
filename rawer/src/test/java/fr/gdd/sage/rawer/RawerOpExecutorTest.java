@@ -1,17 +1,19 @@
 package fr.gdd.sage.rawer;
 
 import fr.gdd.sage.databases.inmemory.InMemoryInstanceOfTDB2ForRandom;
+import fr.gdd.sage.jena.JenaBackend;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.ExecutionContext;
-import org.apache.jena.sparql.engine.QueryIterator;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -63,10 +65,12 @@ public class RawerOpExecutorTest {
         Op query = Algebra.compile(QueryFactory.create(queryAsString));
 
         ExecutionContext ec = new ExecutionContext(dataset.asDatasetGraph());
+        ec.getContext().set(RawerConstants.BACKEND, new JenaBackend(dataset));
         ARQ.enableOptimizer(false);
         RawerOpExecutor executor = new RawerOpExecutor(ec).setLimit(limit);
 
-        QueryIterator iterator = executor.execute(query);
+        // QueryIterator iterator = executor.execute(query);
+        Iterator iterator = executor.execute(query);
 
         int nbResults = 0;
         while (iterator.hasNext()) {

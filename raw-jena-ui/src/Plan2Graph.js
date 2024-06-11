@@ -9,7 +9,7 @@ export class Plan2Graph {
     LEFTJOIN = "⟕";
     PRODUCT = "⨯";
     UNION   = "∪";
-    
+
     constructor() {
         this.ids = 0; // the node identifiers to allocate
         this.nodes = [];
@@ -17,47 +17,47 @@ export class Plan2Graph {
         this.colorHash = new ColorHash();
         this.flatten = true;
     }
-    
+
     visit(node, args) {
         switch (node.type) {
-        case "project" : return this.visitProject(node, args);
-        case "slice"   : return this.visitSlice(node, args);
-        case "distinct": return this.visitDistinct(node, args);
-        case "orderby" : return this.visitOrderBy(node, args);
+            case "project" : return this.visitProject(node, args);
+            case "slice"   : return this.visitSlice(node, args);
+            case "distinct": return this.visitDistinct(node, args);
+            case "orderby" : return this.visitOrderBy(node, args);
 
-        case "values"  : return this.visitValues(node, args);
-        case "leftjoin": return this.visitLeftJoin(node, args);
-        case "bgp"     : return this.visitBGP(node, args);
-        case "filter"  : return this.visitFilter(node, args);
-        case "service" : return this.visitService(node, args);
-        case "join"    : return this.visitJoin(node, args);
-        case "union"   : return this.visitUnion(node, args);
-        case "pattern" :
-            switch (node.termType) {
-            case "Triple": return this.visitTriple(node, args);
-            case "Quad"  : return this.visitQuad(node, args);
-            default: throw new Error("Type " + node.termType + " not implemented…");
-            };
-        default: throw new Error("Operator " + node.type + " not implemented…");
+            case "values"  : return this.visitValues(node, args);
+            case "leftjoin": return this.visitLeftJoin(node, args);
+            case "bgp"     : return this.visitBGP(node, args);
+            case "filter"  : return this.visitFilter(node, args);
+            case "service" : return this.visitService(node, args);
+            case "join"    : return this.visitJoin(node, args);
+            case "union"   : return this.visitUnion(node, args);
+            case "pattern" :
+                switch (node.termType) {
+                    case "Triple": return this.visitTriple(node, args);
+                    case "Quad"  : return this.visitQuad(node, args);
+                    default: throw new Error("Type " + node.termType + " not implemented…");
+                };
+            default: throw new Error("Operator " + node.type + " not implemented…");
         }
     }
 
-
+
 
     visitProject(node, args) {
         return this.visitUnaryOperator(node, args);
     }
 
     visitSlice(node, args) {
-        return this.visitUnaryOperator(node, args);        
+        return this.visitUnaryOperator(node, args);
     }
 
     visitDistinct(node, args) {
-        return this.visitUnaryOperator(node, args);        
+        return this.visitUnaryOperator(node, args);
     }
 
     visitOrderBy(node, args) {
-        return this.visitUnaryOperator(node, args);        
+        return this.visitUnaryOperator(node, args);
     }
 
     visitFilter(node, args) {
@@ -69,17 +69,17 @@ export class Plan2Graph {
         for (var i in node.input) {
             children.push(this.visit(node.input[i], args));
         };
-        
+
         var leftJoinNode = this.addNode(this.LEFTJOIN);
         leftJoinNode.size = "0.75em";
         Object.assign(leftJoinNode, args);
-        
+
         for (var i in children) {
             this.addLink(leftJoinNode, children[i], children.length>1 && (parseInt(i)+1));
         };
         return leftJoinNode;
     }
-    
+
     visitBGP(node, args) {
         var children = [];
         for (var i in node.patterns) {
@@ -89,7 +89,7 @@ export class Plan2Graph {
         if (children.length === 1) {
             return children[0]; // no intermediary nodes
         }
-        
+
         if (this.flatten) { // multijoin
             var joinNode = this.addNode(this.PRODUCT);
             joinNode.size = "1.5em";
@@ -105,7 +105,7 @@ export class Plan2Graph {
             return children[0];
         };
     }
-    
+
     visitService(node, args) {
         // Does not exist has a node by itself, but the coloring
         // make it exist
@@ -120,11 +120,11 @@ export class Plan2Graph {
             // special kind of join
             return this.visitValuesOfServices(node, args);
         };
-        
+
         var joinNode = this.addNode(this.PRODUCT);
         joinNode.size = "1.5em";
         Object.assign(joinNode, args);
-              
+
         var children = [];
         for (var i in node.input) { // already flattened
             children.push(this.visit(node.input[i], args));
@@ -144,7 +144,7 @@ export class Plan2Graph {
             console.log(values.bindings[i]);
             valueToHash += values.bindings[i]["?"+values.variables[0].value].value;
         }
-        
+
         var valuesNode = this.addNode("V");
         var args = {color: this.colorHash.hex(valueToHash)};
         Object.assign(valuesNode, args);
@@ -152,7 +152,7 @@ export class Plan2Graph {
         this.addLink(valuesNode, serviceNode, "x"+values.bindings.length);
         return valuesNode;
     }
-    
+
 
     visitUnion(node, args) {
         var unionNode = this.addNode(this.UNION);
@@ -173,8 +173,8 @@ export class Plan2Graph {
 
     visitTriple(node, args) {
         const text = this.visitTerm(node.subject) + " " +
-              this.visitTerm(node.predicate) + " " +
-              this.visitTerm(node.object);
+            this.visitTerm(node.predicate) + " " +
+            this.visitTerm(node.object);
         var tripleNode = this.addNode(text); // TODO
         Object.assign(tripleNode, args); // merges
         return tripleNode;
@@ -192,9 +192,9 @@ export class Plan2Graph {
 
     visitTerm(term) {
         switch (term.termType) {
-        case "Variable": return ""; // "?";//+term.value;
-        case "NamedNode": return ""; //  "<>";//+term.value+">";
-        default: throw new Error("Type " + node.termType + " not implemented…");
+            case "Variable": return "?"+term.value;
+            case "NamedNode": return "<"+term.value+">";
+            default: throw new Error("Type " + node.termType + " not implemented…");
         }
     }
 
@@ -207,11 +207,10 @@ export class Plan2Graph {
         Object.assign(n, args);
         var child = this.visit(node.input, args);
         this.addLink(n.id, child.id);
-        return n;        
+        return n;
     }
 
-
-    
+
     addNode(type) {
         this.nodes.push(new GraphNode(this.ids, type));
         this.ids += 1;
@@ -224,7 +223,7 @@ export class Plan2Graph {
 
 }
 
-
+
 
 class GraphNode {
 

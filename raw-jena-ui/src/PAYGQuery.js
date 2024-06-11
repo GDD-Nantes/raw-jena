@@ -35,6 +35,7 @@ export class PAYGQuery {
     
     // Merge the newly arrived data with the current one if possible.
     update(duration, bindings, raw, rawAggregated) {
+        if (!raw && !rawAggregated) return;
         // (TODO) compare two plan instead of hacking with serialization…
         if (JSON.stringify(this.plan) !== JSON.stringify(JSON.parse(raw.plan))) { // plan is different, must be a different request
             this.reset();

@@ -92,6 +92,11 @@
       yasqe.on("queryResponse", (instance, resp, duration) => {
           if (resp.status === 200) {
               var data = JSON.parse(resp.text);
+
+              if (!data.RAWOutput && !data.RAWOutputAggregated) {
+                  return;
+              }
+              
               // update the plugin data structure
               let raw = yasr.plugins["RAW"];
               raw.payg.update(duration, data.results.bindings, data.RAWOutput, data.RAWOutputAggregated);
@@ -115,7 +120,10 @@
               yasr.results.bindings = yasr.plugins["RAW"].payg.bindings;
               updateResponseInfo.call(yasr);
           }
-          yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + (yasr.plugins["RAW"].payg.nbTimes > 1 ? " iterations)" : " iteration)");
+
+          if (yasr.plugins["RAW"].payg.nbTimes > 1) { // only when multiple round-trips
+              yasr.dataElement.innerText += " (" + yasr.plugins["RAW"].payg.nbTimes + (yasr.plugins["RAW"].payg.nbTimes > 1 ? " iterations)" : " iteration)");
+          }
       };
 
     </script>

@@ -12,6 +12,7 @@
     <script type="module" src="./src/PlanPlugin.js"></script>
     <script type="module" src="./src/PlanView.js"></script>
     <script type="module" src="./src/QueryExamples.js"></script>
+    <script type="module" src="./src/FedShopQueryExamples.js"></script>
     <script type="module" src="./src/CardinalityGraph.js"></script>
     <script type="module" src="./src/LoopButton.js"></script>
   </head>
@@ -19,7 +20,8 @@
   <body>
     <div class="header">
       <span class="logo">R.A.W</span>
-      <button id="header_button" class="header_button" onclick="">Examples</button>
+      <button id="header_button" class="header_button" onclick="">WDBench</button>
+      <button id="header_fedshop" class="header_button" onclick="">FedShop</button>
       <span class="github">
         <a href="https://github.com/Chat-Wane/raw-jena">
         <img src="./res/github-mark.svg"
@@ -31,6 +33,9 @@
     </div>
 
     <dialog id="examples_dialog" class="examples_dialog">
+    </dialog>
+
+    <dialog id="fedshop_dialog" class="fedshop_dialog">
     </dialog>
     
     <div id="yasgui"></div>
@@ -57,8 +62,20 @@
               dialog.close();
           }
       });
+      
+      const buttonFedShop = document.getElementById("header_fedshop");
+      const fedShopDialog = document.getElementById("fedshop_dialog");
+      buttonFedShop.addEventListener("click", () => {
+          fedShopDialog.showModal();
+      });
 
-      ///////////////////////////////////////////////////
+      fedShopDialog.addEventListener('click', (event) => {
+          if (event.target.id !== 'examples_dialog_content') {
+              fedShopDialog.close();
+          }
+      });
+
+      //////////////////////////////////////////////////////////////////////////
 
       import {RAWPlugin} from "./src/RAWPlugin.js";
       Yasr.registerPlugin("RAW", RAWPlugin); // registering of plugins must be done before Yasgui() ofc.
@@ -88,6 +105,9 @@
       
       import {QueryExamples} from "./src/QueryExamples.js";
       new QueryExamples(dialog, yasqe);
+      import {FedShopQueryExamples} from "./src/FedShopQueryExamples.js";
+      new FedShopQueryExamples(fedShopDialog, yasqe);
+
       
       yasqe.on("queryResponse", (instance, resp, duration) => {
           if (resp.status === 200) {

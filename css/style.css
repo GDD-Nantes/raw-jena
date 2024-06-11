@@ -150,6 +150,11 @@ svg {
     stroke: var(--frost-4);
 }
 
+#plan {
+    width:100%;
+    height:500px;
+}
+
 .desc_plan {
     stroke:  var(--frost-4);
     fill: var(--frost-4);

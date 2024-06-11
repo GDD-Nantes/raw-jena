@@ -4,10 +4,11 @@
 
 const Utils = $.fn.bootstrapTable.utils
 
-function printPageBuilderDefault (table) {
+function printPageBuilderDefault (table, styles) {
   return `
     <html>
     <head>
+    ${styles}
     <style type="text/css" media="print">
     @page {
       size: auto;
@@ -36,7 +37,7 @@ function printPageBuilderDefault (table) {
       margin-right: 3%;
     }
     div.bs-table-print {
-      text-align:center;
+      text-align: center;
     }
     </style>
     </head>
@@ -61,8 +62,9 @@ Object.assign($.fn.bootstrapTable.defaults, {
   printAsFilteredAndSortedOnUI: true,
   printSortColumn: undefined,
   printSortOrder: 'asc',
-  printPageBuilder (table) {
-    return printPageBuilderDefault(table)
+  printStyles: [],
+  printPageBuilder (table, styles) {
+    return printPageBuilderDefault(table, styles)
   }
 })
 
@@ -135,9 +137,12 @@ $.BootstrapTable = class extends $.BootstrapTable {
   }
 
   doPrint (data) {
-    const _this2 = this
+    const canPrint = column => {
+      return !column.printIgnore && column.visible
+    }
+
     const formatValue = (row, i, column) => {
-      const value_ = Utils.getItemField(row, column.field, _this2.options.escape, column.escape)
+      const value_ = Utils.getItemField(row, column.field, this.options.escape, column.escape)
       const value = Utils.calculateObjectValue(column,
         column.printFormatter || column.formatter,
         [value_, row, i], value_)
@@ -153,7 +158,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       for (const columns of columnsArray) {
         html.push('<tr>')
         for (let h = 0; h < columns.length; h++) {
-          if (!columns[h].printIgnore && columns[h].visible) {
+          if (canPrint(columns[h])) {
             html.push(
               `<th
               ${Utils.sprintf(' rowspan="%s"', columns[h].rowspan)}
@@ -211,11 +216,11 @@ $.BootstrapTable = class extends $.BootstrapTable {
           }
 
           if (
-            !columns[j].printIgnore && columns[j].visible && columns[j].field &&
-              (
-                !notRender.includes(`${i},${j}`) ||
-                rowspan > 0 && colspan > 0
-              )
+            canPrint(columns[j]) &&
+            (
+              !notRender.includes(`${i},${j}`) ||
+              rowspan > 0 && colspan > 0
+            )
           ) {
             if (rowspan > 0 && colspan > 0) {
               html.push(`<td ${Utils.sprintf(' rowspan="%s"', rowspan)} ${Utils.sprintf(' colspan="%s"', colspan)}>`, formatValue(data[i], i, columns[j]), '</td>')
@@ -224,7 +229,6 @@ $.BootstrapTable = class extends $.BootstrapTable {
             }
           }
         }
-
 
         html.push('</tr>')
       }
@@ -235,7 +239,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
         for (const columns of columnsArray) {
           for (let h = 0; h < columns.length; h++) {
-            if (!columns[h].printIgnore && columns[h].visible) {
+            if (canPrint(columns)) {
               const footerData = Utils.trToData(columns, this.$el.find('>tfoot>tr'))
               const footerValue = Utils.calculateObjectValue(columns[h], columns[h].footerFormatter, [data], footerData[0] && footerData[0][columns[h].field] || '')
 
@@ -279,13 +283,30 @@ $.BootstrapTable = class extends $.BootstrapTable {
     data = sortRows(data, this.options.printSortColumn, this.options.printSortOrder)
     const table = buildTable(data, this.options.columns)
     const newWin = window.open('')
+    const printStyles = typeof this.options.printStyles === 'string' ?
+      this.options.printStyles.replace(/\[|\]| /g, '').toLowerCase().split(',') :
+      this.options.printStyles
+    const styles = printStyles.map(it =>
+      `<link rel="stylesheet" href="${it}" />`).join('')
 
-    const calculatedPrintPage = Utils.calculateObjectValue(this, this.options.printPageBuilder, [table], printPageBuilderDefault(table))
+    const calculatedPrintPage = Utils.calculateObjectValue(this, this.options.printPageBuilder,
+      [table, styles], printPageBuilderDefault(table, styles))
+    const startPrint = () => {
+      newWin.focus()
+      newWin.print()
+      newWin.close()
+    }
 
     newWin.document.write(calculatedPrintPage)
     newWin.document.close()
-    newWin.focus()
-    newWin.print()
-    newWin.close()
+
+    if (printStyles.length) {
+      const links = document.getElementsByTagName('link')
+      const lastLink = links[links.length - 1]
+
+      lastLink.onload = startPrint
+    } else {
+      startPrint()
+    }
   }
 }

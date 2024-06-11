@@ -1,5 +1,6 @@
 import {Plan2Graph} from "./Plan2Graph.js";
 import { translate } from 'sparqlalgebrajs';
+import * as d3 from "d3";
 
 /**
  * Plugin that prints a SPARQL logical plan as a graph. The
@@ -10,44 +11,47 @@ export class PlanPlugin {
 
     priority = 10;
     hideFromSelection = false;
-    
+
     constructor(yasr) {
         this.yasr = yasr;
     }
 
-    getQueryAsString() {
-        var query = decodeURIComponent(this.yasr.config.getPlainQueryLinkToEndpoint()); // ugly
-        const startOfQuery = query.indexOf("?query=") + 7;
-        return query.substring(startOfQuery, query.length);
-    }    
-
     draw() {
+        // comes from <https://developer.mozilla.org/en-US/docs/Glossary/Base64>
+        const decoder = new TextDecoder();
+        function base64ToBytes(base64) {
+            const binString = atob(base64);
+            return Uint8Array.from(binString, (m) => m.codePointAt(0));
+        }
+        
+        const query = decoder.decode(base64ToBytes(this.yasr.results.json.FedUP_Exported))
+        
         // #1 create the canvas that will hold the plan
         const div = document.createElement("div");
         div.setAttribute("class", "raw_graph");
 
-        const r = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        r.setAttribute("id", "rootG");
+        const rootG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        rootG.setAttribute("id", "rootG");
         const n = document.createElementNS("http://www.w3.org/2000/svg", "g");
         n.setAttribute("class", "links");
         const l = document.createElementNS("http://www.w3.org/2000/svg", "g");
         l.setAttribute("class", "nodes");        
-        const t = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        t.setAttribute("class", "texts");        
+        const c = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        c.setAttribute("id", "grab");
+        c.setAttribute("cursor", "grab");
 
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("id", "plan");
         svg.setAttribute("viewBox", "0 0 300 300");
 
-        svg.appendChild(r);
-        r.appendChild(n);
-        r.appendChild(l);
-        r.appendChild(t);
+        svg.appendChild(rootG);
+        rootG.appendChild(n);
+        rootG.appendChild(l);
+        svg.appendChild(c);
         div.appendChild(svg);
         this.yasr.resultsEl.appendChild(div);
 
         // #2 build the plan
-        const query = this.getQueryAsString();
         const plan = translate(query, {sparqlStar: true});
 
         var visitor = new Plan2Graph();
@@ -55,15 +59,18 @@ export class PlanPlugin {
 
         var width = 300, height = 300
 
-        var glinks = d3.select('.links')
-	    .selectAll('line')
-	    .data(visitor.links)
-	    .join('line')
-	    .attr('x1', d => d.source.x)
-	    .attr('y1', d => d.source.y)
-	    .attr('x2', d => d.target.x)
-	    .attr('y2', d => d.target.y);
+        d3.select('.links').selectAll('*').remove()
+        d3.select('.nodes').selectAll('*').remove()
 
+        var glinks = d3.select('.links')
+            .selectAll('line')
+            .data(visitor.links)
+            .join('line')
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+        
         var glabels = d3.select('.links') // TODO create "G" for lines and labels
             .selectAll("text")
             .data(visitor.links)
@@ -73,18 +80,18 @@ export class PlanPlugin {
         
         function updateLinks() {
             glinks.attr('x1', d => d.source.x)
-	        .attr('y1', d => d.source.y)
-	        .attr('x2', d => d.target.x)
-	        .attr('y2', d => d.target.y);
-
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+            
             glabels.attr("x", d => (d.source.x + d.target.x) / 2)
                 .attr("y", d => (d.source.y + d.target.y) / 2)
-        };
-
-
-	var gnodes = d3.select('.nodes') // initialize nodes
+        }
+        
+        
+        var gnodes = d3.select('.nodes') // initialize nodes
             .selectAll('g')
-	    .data(visitor.nodes)
+            .data(visitor.nodes)
             .join('g')
             .attr('x', d => d.x)
             .attr('y', d => d.y)
@@ -93,59 +100,58 @@ export class PlanPlugin {
                   .on("start", dragstarted)
                   .on("drag", dragged)
                   .on("end", dragended));
-
+        
         gnodes.append('circle')
             .attr('r', 5)
             .attr('fill', d => d.color)
-            .attr('stroke', d => (d.color === "white" && "black") || d.color);
+            .attr('stroke', d => (d.color === "white" && "black") || d.color)
+            .append('title').text(d => d.type);
         
         gnodes.append('text')
-	    .text(d => d.type)
-	    .attr('dy', "0.25em") // vertical centering
+            .text(d => ((d.type==='project' || d.type==="⨯" || d.type==="⟕" || d.type==="∪") && d.type) || '')
+            .attr('dy', "0.25em") // vertical centering
             .attr("text-anchor", "middle")
             .attr("font-size", d => d.size);
         
-
         
         function updateNodes() {
-            gnodes.attr("transform", d => "translate("+d.x+","+d.y+")")
+            gnodes.attr("transform", d => "translate(" + d.x + "," + d.y + ")")
                 .call(d3.drag()
                       .on("start", dragstarted)
                       .on("drag", dragged)
                       .on("end", dragended))
-        };
-
+        }
+        
         function ticked() {
             updateLinks();
             updateNodes();
-        };
+        }
         
-        var simulation = d3.forceSimulation(visitor.nodes)
-            .force('charge', d3.forceManyBody())
-            .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('link', d3.forceLink().links(visitor.links))
-            .on('tick', ticked);
-
-
+        const simulation = d3.forceSimulation(visitor.nodes)
+              .force('charge', d3.forceManyBody())
+              .force('center', d3.forceCenter(width / 2, height / 2))
+              .force('link', d3.forceLink().links(visitor.links))
+              .on('tick', ticked);
+        
+        
         // zoom zoom zoom
-        function zoomed({ transform }) {
+        const r = svg.getElementById("rootG")
+        // let r = d3.select('rootG')
+        function zoomed({transform}) {
             r.setAttribute("transform", transform);
         }
         
-        let zoom = d3.zoom().on("zoom", zoomed);        
+        const zoom = d3.zoom().on("zoom", zoomed);
         d3.select("#plan").call(zoom);
-
+        
         // dragable
-        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        g.setAttribute("cursor", "grab");
-        svg.appendChild(g);
-
+        const g = svg.getElementById('grab');
         function getNode(nodes, id) { // could be more efficient with a map
             for (var i in nodes) {
                 if (nodes[i].id === id) {
                     return nodes[i];
-                };
-            };
+                }
+            }
         }
         
         function dragstarted() {
@@ -163,15 +169,25 @@ export class PlanPlugin {
         function dragended() {
             g.setAttribute("cursor", "grab");
         }
+        
     }
 
     canHandleResults() {
+        if (!this.yasr || !this.yasr.results || !this.yasr.results.json || !this.yasr.results.json.FedUP_Exported) {
+            return false;
+        }
+        
         try {
-            var query = decodeURIComponent(this.yasr.config.getPlainQueryLinkToEndpoint());
-            const startOfQuery = query.indexOf("?query=") + 7;
-            query = query.substring(startOfQuery, query.length);
-            translate(query, {sparqlStar: true});
-            // TODO maybe add a "can I visit it" check?
+            // comes from <https://developer.mozilla.org/en-US/docs/Glossary/Base64>
+            const decoder = new TextDecoder();
+            function base64ToBytes(base64) {
+                const binString = atob(base64);
+                return Uint8Array.from(binString, (m) => m.codePointAt(0));
+            }
+
+            const query = decoder.decode(base64ToBytes(this.yasr.results.json.FedUP_Exported));
+            console.log(query);
+            translate(query, {sparqlStar: true}); // if it fails it throws, if it throws it is false
         } catch (error) {
             return false;
         }

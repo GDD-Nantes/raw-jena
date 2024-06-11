@@ -57,7 +57,7 @@ export class RAWPlugin {
     }
 
     canHandleResults() {
-        return this.yasr.results && this.yasr.results.json &&
+        return this.yasr && this.yasr.results && this.yasr.results.json &&
             (this.yasr.results.json.RAWOutput || this.yasr.results.json.RAWOutputAggregated);
     }
 
